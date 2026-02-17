@@ -1,0 +1,44 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__
+*.py[cod]
+*.egg-info
+.mypy_cache
+.ruff_cache
+.pytest_cache
+.coverage
+htmlcov
+coverage*.xml
+
+# Virtual environments
+.venv
+venv
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# Dashboard (not needed for platform image)
+dashboard/node_modules
+dashboard/dist
+
+# Dev files
+docker-compose.dev.yml
+CHANGELOG.md
+CONTRIBUTING.md
+justfile
+.pre-commit-config.yaml
+.github
+
+# Tests (not in production image)
+packages/*/tests
+tests
+
+# Build artifacts
+dist
+build

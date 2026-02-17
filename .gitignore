@@ -1,0 +1,87 @@
+# =============================================================================
+# Artenic AI — .gitignore
+# Python + Node.js + ML + IDE + OS
+# =============================================================================
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+*.whl
+.eggs/
+
+# --- Virtual environments ---
+.venv/
+venv/
+env/
+
+# --- Testing & Coverage ---
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+*.cover
+
+# --- Type checking ---
+.mypy_cache/
+.pytype/
+
+# --- Linting ---
+.ruff_cache/
+
+# --- Node.js / Dashboard ---
+node_modules/
+dashboard/dist/
+dashboard/.vite/
+*.tsbuildinfo
+
+# --- ML artifacts ---
+*.pt
+*.pth
+*.onnx
+*.safetensors
+*.h5
+*.pkl
+*.joblib
+mlflow-artifacts/
+mlruns/
+
+# --- IDE ---
+.vscode/
+!.vscode/settings.json
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+*~
+
+# --- OS ---
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- Environment ---
+.env
+.env.local
+.env.*.local
+
+# --- Docker ---
+docker-compose.override.yml
+
+# --- Data ---
+data/
+*.csv
+*.parquet
+*.feather
+
+# --- Secrets ---
+*.pem
+*.key
+service-account*.json
+credentials*.json

@@ -1,0 +1,211 @@
+[project]
+name = "artenic-ai"
+version = "0.1.0"
+description = "Open-Source ML Platform — Train, Serve & Scale AI Models"
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = ">=3.12"
+authors = [
+    { name = "Artenic Cloud", email = "dev@artenic.cloud" },
+]
+
+[tool.uv]
+managed = true
+
+[tool.uv.workspace]
+members = [
+    "packages/sdk",
+    "packages/platform",
+    "packages/cli",
+    "packages/optimizer",
+]
+
+[tool.uv.sources]
+artenic-ai-sdk = { workspace = true }
+artenic-ai-platform = { workspace = true }
+artenic-ai-cli = { workspace = true }
+artenic-optimizer = { workspace = true }
+
+# ===========================================================================
+# Shared dev dependencies (installed at workspace root)
+# ===========================================================================
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.24",
+    "pytest-cov>=6.0",
+    "mypy>=1.13",
+    "ruff>=0.8",
+    "pre-commit>=4.0",
+    "aiosqlite>=0.20",
+    "httpx>=0.27",
+    "greenlet>=3.0",
+]
+
+# ===========================================================================
+# Ruff — single config for the entire workspace
+# ===========================================================================
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = [
+    "packages/sdk/src",
+    "packages/platform/src",
+    "packages/cli/src",
+    "packages/optimizer/src",
+]
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "F",    # pyflakes
+    "I",    # isort
+    "N",    # pep8-naming
+    "W",    # pycodestyle warnings
+    "UP",   # pyupgrade
+    "B",    # flake8-bugbear
+    "SIM",  # flake8-simplify
+    "TCH",  # flake8-type-checking
+    "RUF",  # ruff-specific rules
+]
+
+[tool.ruff.lint.isort]
+known-first-party = [
+    "artenic_ai_sdk",
+    "artenic_ai_platform",
+    "artenic_ai_cli",
+    "artenic_optimizer",
+]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+# ===========================================================================
+# mypy — strict mode for the entire workspace
+# ===========================================================================
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+explicit_package_bases = true
+mypy_path = [
+    "packages/sdk/src",
+    "packages/platform/src",
+    "packages/cli/src",
+    "packages/optimizer/src",
+]
+exclude = ["tests/"]
+
+# Optional ML dependencies — ignore missing stubs
+[[tool.mypy.overrides]]
+module = [
+    "torch",
+    "torch.*",
+    "safetensors",
+    "safetensors.*",
+    "onnxruntime",
+    "onnxruntime.*",
+    "sklearn",
+    "sklearn.*",
+    "xxhash",
+    "xxhash.*",
+    "yaml",
+    "yaml.*",
+    "httpx",
+    "httpx.*",
+    "joblib",
+    "joblib.*",
+    "sqlalchemy",
+    "sqlalchemy.*",
+    "asyncpg",
+    "asyncpg.*",
+    "aiosqlite",
+    "aiosqlite.*",
+    "uvicorn",
+    "uvicorn.*",
+    "fastapi",
+    "fastapi.*",
+    "starlette",
+    "starlette.*",
+    "mlflow",
+    "mlflow.*",
+    "alembic",
+    "alembic.*",
+    "prometheus_client",
+    "prometheus_client.*",
+    "opentelemetry",
+    "opentelemetry.*",
+    "cryptography",
+    "cryptography.*",
+    "pydantic_settings",
+    "pydantic_settings.*",
+    "boto3",
+    "boto3.*",
+    "botocore",
+    "botocore.*",
+    "google.cloud",
+    "google.cloud.*",
+    "google.auth",
+    "google.auth.*",
+    "azure",
+    "azure.*",
+    "oci",
+    "oci.*",
+    "openstack",
+    "openstack.*",
+    "hcloud",
+    "hcloud.*",
+    "kubernetes",
+    "kubernetes.*",
+]
+ignore_missing_imports = true
+
+# ===========================================================================
+# pytest — shared config
+# ===========================================================================
+[tool.pytest.ini_options]
+testpaths = [
+    "packages/sdk/tests",
+    "packages/platform/tests",
+    "packages/cli/tests",
+    "packages/optimizer/tests",
+    "tests",
+]
+asyncio_mode = "auto"
+addopts = "-ra --strict-markers --strict-config --import-mode=importlib"
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests that need external services",
+]
+
+# ===========================================================================
+# coverage
+# ===========================================================================
+[tool.coverage.run]
+concurrency = ["greenlet", "thread"]
+source = [
+    "packages/sdk/src",
+    "packages/platform/src",
+    "packages/cli/src",
+    "packages/optimizer/src",
+]
+omit = ["*/tests/*", "*/__pycache__/*"]
+
+[tool.coverage.report]
+show_missing = true
+fail_under = 100
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "if __name__ == .__main__.",
+    "@overload",
+    "raise NotImplementedError",
+]

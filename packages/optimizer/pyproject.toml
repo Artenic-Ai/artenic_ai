@@ -1,0 +1,23 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "artenic-optimizer"
+version = "0.1.0"
+description = "Artenic Training Optimizer — LTR-based instance selection for ML training jobs"
+readme = "../../README.md"
+license = "Apache-2.0"
+requires-python = ">=3.12"
+authors = [
+    { name = "Artenic Cloud", email = "dev@artenic.cloud" },
+]
+
+dependencies = [
+    "artenic-ai-sdk",
+    "lightgbm>=4.5",
+    "numpy>=1.26",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/artenic_optimizer"]
