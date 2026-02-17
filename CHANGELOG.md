@@ -3,6 +3,39 @@
 All notable changes to this project will be documented in this file.
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.3.0] — 2026-02-17
+
+### Step 4 — CLI (`packages/cli/`)
+
+#### Commands
+- 10 command groups covering all platform API endpoints
+- `artenic health` — liveness, readiness, detailed health
+- `artenic model` — register, list, get, promote, retire
+- `artenic predict` / `artenic predict-batch` — single/batch inference
+- `artenic training` — dispatch, list, status, cancel jobs
+- `artenic budget` — create, list, update rules, check spending
+- `artenic ensemble` — create, list, update, train, versions
+- `artenic ab-test` — create, list, results, conclude, pause, resume
+- `artenic settings` — schema, get, update, audit log
+- `artenic config` — local CLI config (show, set, use-profile)
+
+#### Features
+- Rich terminal output (tables, dicts) + `--json` machine-readable mode
+- TOML multi-profile configuration (`~/.artenic/config.toml`)
+- Config precedence: CLI flags > env vars > TOML file > defaults
+- Async HTTP client (httpx) with retry-friendly error handling
+- Credential masking in output and error messages
+- TOML injection prevention, config directory permissions (0o700)
+- Input validation: JSON params, tag format, KEY=VALUE pairs
+
+#### Quality
+- 159 tests, 100% coverage
+- mypy strict — 0 errors across 17 source files
+- ruff lint + format — clean
+- Security audit: 14 corrections applied (5 critical, 6 high, 3 medium)
+
+---
+
 ## [0.2.0] — 2026-02-16
 
 ### Step 3 — Platform Service (`packages/platform/`)
@@ -66,35 +99,6 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - ruff lint + format — clean
 - CI pipeline: lint + type-check + test for both SDK and Platform
 - Dockerfile for production deployment (multi-stage, non-root, health check)
-
-### Step 4 — CLI (`packages/cli/`)
-
-#### Commands
-- 10 command groups covering all platform API endpoints
-- `artenic health` — liveness, readiness, detailed health
-- `artenic model` — register, list, get, promote, retire
-- `artenic predict` / `artenic predict-batch` — single/batch inference
-- `artenic training` — dispatch, list, status, cancel jobs
-- `artenic budget` — create, list, update rules, check spending
-- `artenic ensemble` — create, list, update, train, versions
-- `artenic ab-test` — create, list, results, conclude, pause, resume
-- `artenic settings` — schema, get, update, audit log
-- `artenic config` — local CLI config (show, set, use-profile)
-
-#### Features
-- Rich terminal output (tables, dicts) + `--json` machine-readable mode
-- TOML multi-profile configuration (`~/.artenic/config.toml`)
-- Config precedence: CLI flags > env vars > TOML file > defaults
-- Async HTTP client (httpx) with retry-friendly error handling
-- Credential masking in output and error messages
-- TOML injection prevention, config directory permissions (0o700)
-- Input validation: JSON params, tag format, KEY=VALUE pairs
-
-#### Quality
-- 159 tests, 100% coverage
-- mypy strict — 0 errors across 17 source files
-- ruff lint + format — clean
-- Security audit: 14 corrections applied (5 critical, 6 high, 3 medium)
 
 ---
 
