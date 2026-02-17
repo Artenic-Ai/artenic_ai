@@ -1,0 +1,215 @@
+# =============================================================================
+# Artenic AI — Continuous Integration
+# =============================================================================
+# Runs on every push to main and every pull request.
+# Jobs: lint, type-check (SDK + Platform), test (SDK + Platform), dashboard.
+# =============================================================================
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHON_VERSION: "3.12"
+
+jobs:
+  # =========================================================================
+  # Lint (ruff check + ruff format --check) — all packages
+  # =========================================================================
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: Set up Python
+        run: uv python install ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: uv sync --dev
+
+      - name: Ruff check
+        run: uv run ruff check .
+
+      - name: Ruff format check
+        run: uv run ruff format --check .
+
+  # =========================================================================
+  # Type check — SDK (mypy strict)
+  # =========================================================================
+  type-check-sdk:
+    name: Type Check (SDK)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: Set up Python
+        run: uv python install ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: uv sync --dev --package artenic-ai-sdk
+
+      - name: mypy (SDK)
+        run: uv run mypy packages/sdk/
+
+  # =========================================================================
+  # Type check — Platform (mypy strict)
+  # =========================================================================
+  type-check-platform:
+    name: Type Check (Platform)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: Set up Python
+        run: uv python install ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: uv sync --dev --package artenic-ai-platform
+
+      - name: mypy (Platform)
+        run: uv run mypy packages/platform/
+
+  # =========================================================================
+  # Test — SDK
+  # =========================================================================
+  test-sdk:
+    name: Test SDK (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: Set up Python ${{ matrix.python-version }}
+        run: uv python install ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: uv sync --dev --package artenic-ai-sdk
+
+      - name: Run tests with coverage
+        run: |
+          uv run pytest packages/sdk/tests/ \
+            --cov=artenic_ai_sdk \
+            --cov-report=xml:coverage-sdk.xml \
+            --cov-report=term-missing \
+            -v
+
+      - name: Upload coverage artifact
+        if: matrix.python-version == '3.12'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-sdk
+          path: coverage-sdk.xml
+
+  # =========================================================================
+  # Test — Platform
+  # =========================================================================
+  test-platform:
+    name: Test Platform (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: Set up Python ${{ matrix.python-version }}
+        run: uv python install ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: uv sync --dev --package artenic-ai-platform
+
+      - name: Run tests with coverage
+        run: |
+          uv run pytest packages/platform/tests/ \
+            --cov=artenic_ai_platform \
+            --cov-report=xml:coverage-platform.xml \
+            --cov-report=term-missing \
+            --cov-fail-under=100 \
+            -v
+
+      - name: Upload coverage artifact
+        if: matrix.python-version == '3.12'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-platform
+          path: coverage-platform.xml
+
+  # =========================================================================
+  # Dashboard (type-check + build)
+  # =========================================================================
+  dashboard:
+    name: Dashboard
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: dashboard
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Type check
+        run: npx tsc --noEmit
+
+      - name: Build
+        run: npm run build
+
+  # =========================================================================
+  # Trigger deploy — notify artenic_infra when CI passes on main
+  # =========================================================================
+  deploy-trigger:
+    name: Trigger Deploy
+    runs-on: ubuntu-latest
+    needs: [lint, type-check-sdk, type-check-platform, test-sdk, test-platform, dashboard]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - name: Trigger deploy
+        run: |
+          curl -X POST \
+            -H "Authorization: token ${{ secrets.INFRA_DEPLOY_PAT }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/${{ secrets.DEPLOY_REPO }}/dispatches \
+            -d '{"event_type": "deploy-ai"}'
