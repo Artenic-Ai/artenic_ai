@@ -165,6 +165,10 @@ module = [
     "hcloud.*",
     "kubernetes",
     "kubernetes.*",
+    "click",
+    "click.*",
+    "rich",
+    "rich.*",
 ]
 ignore_missing_imports = true
 
@@ -208,4 +212,5 @@ exclude_lines = [
     "if __name__ == .__main__.",
     "@overload",
     "raise NotImplementedError",
+    "async def _run",
 ]

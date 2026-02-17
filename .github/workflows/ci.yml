@@ -2,7 +2,7 @@
 # Artenic AI — Continuous Integration
 # =============================================================================
 # Runs on every push to main and every pull request.
-# Jobs: lint, type-check (SDK + Platform), test (SDK + Platform), dashboard.
+# Jobs: lint, type-check (SDK + Platform + CLI), test (SDK + Platform + CLI), dashboard.
 # =============================================================================
 
 name: CI
@@ -94,6 +94,29 @@ jobs:
         run: uv run mypy packages/platform/
 
   # =========================================================================
+  # Type check — CLI (mypy strict)
+  # =========================================================================
+  type-check-cli:
+    name: Type Check (CLI)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: Set up Python
+        run: uv python install ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: uv sync --dev --package artenic-ai-cli
+
+      - name: mypy (CLI)
+        run: uv run mypy packages/cli/
+
+  # =========================================================================
   # Test — SDK
   # =========================================================================
   test-sdk:
@@ -123,6 +146,7 @@ jobs:
             --cov=artenic_ai_sdk \
             --cov-report=xml:coverage-sdk.xml \
             --cov-report=term-missing \
+            --cov-fail-under=100 \
             -v
 
       - name: Upload coverage artifact
@@ -173,6 +197,46 @@ jobs:
           path: coverage-platform.xml
 
   # =========================================================================
+  # Test — CLI
+  # =========================================================================
+  test-cli:
+    name: Test CLI (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: Set up Python ${{ matrix.python-version }}
+        run: uv python install ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: uv sync --dev --package artenic-ai-cli
+
+      - name: Run tests with coverage
+        run: |
+          uv run pytest packages/cli/tests/ \
+            --cov=artenic_ai_cli \
+            --cov-report=xml:coverage-cli.xml \
+            --cov-report=term-missing \
+            --cov-fail-under=100 \
+            -v
+
+      - name: Upload coverage artifact
+        if: matrix.python-version == '3.12'
+        uses: actions/upload-artifact@v6
+        with:
+          name: coverage-cli
+          path: coverage-cli.xml
+
+  # =========================================================================
   # Dashboard (type-check + build)
   # =========================================================================
   dashboard:
@@ -203,7 +267,7 @@ jobs:
   deploy-trigger:
     name: Trigger Deploy
     runs-on: ubuntu-latest
-    needs: [lint, type-check-sdk, type-check-platform, test-sdk, test-platform, dashboard]
+    needs: [lint, type-check-sdk, type-check-platform, type-check-cli, test-sdk, test-platform, test-cli, dashboard]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     steps:
       - name: Trigger deploy

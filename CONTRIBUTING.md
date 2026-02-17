@@ -41,6 +41,7 @@ just test-cov
 # Specific package
 just test-sdk
 just test-platform
+just test-cli
 
 # Specific test file
 just test packages/sdk/tests/test_something.py -v
@@ -127,7 +128,7 @@ ci: add platform type-check and test jobs
 1. **Fork** the repository
 2. **Create a branch** from `main`: `git checkout -b feature/your-feature`
 3. **Make your changes** following the code style above
-4. **Write tests** — we enforce 100% coverage for SDK and platform
+4. **Write tests** — we enforce 100% coverage for SDK, platform, and CLI
 5. **Run `just check`** to verify lint, format, and types pass
 6. **Run `just test-cov`** to verify tests and coverage
 7. **Commit** with a clear message (see conventions above)

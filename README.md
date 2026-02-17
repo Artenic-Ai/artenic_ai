@@ -6,7 +6,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/python-3.12%2B-blue" alt="Python">
   <img src="https://img.shields.io/badge/license-Apache%202.0-green" alt="License">
-  <img src="https://img.shields.io/badge/tests-1973%20passed-brightgreen" alt="Tests">
+  <img src="https://img.shields.io/badge/tests-2176%20passed-brightgreen" alt="Tests">
   <img src="https://img.shields.io/badge/coverage-100%25-brightgreen" alt="Coverage">
 </p>
 
@@ -45,7 +45,7 @@ artenic_ai/
 ├── packages/
 │   ├── sdk/           # Shared SDK — BaseModel contract, schemas, ensemble management
 │   ├── platform/      # Central platform — Gateway, Registry, Orchestrator, Monitoring
-│   ├── cli/           # Command-line interface (stub)
+│   ├── cli/           # Command-line interface — manage platform via terminal
 │   └── optimizer/     # Training optimizer — LTR-based instance selection (stub)
 ├── dashboard/         # React dashboard (stub)
 ├── pyproject.toml     # Workspace root configuration
@@ -59,7 +59,7 @@ artenic_ai/
 |---------|-------------|--------|-------|----------|
 | `sdk` | BaseModel contract, schemas, ensemble, serialization, decorators | **Complete** | 611 | 100% |
 | `platform` | FastAPI gateway, registry, training orchestrator, 15 providers | **Complete** | 1362 | 100% |
-| `cli` | Command-line interface | Stub | — | — |
+| `cli` | Command-line interface — 10 command groups, 40+ subcommands | **Complete** | 159 | 100% |
 | `optimizer` | LTR-based training instance selection | Stub | — | — |
 | `dashboard` | React admin UI | Stub | — | — |
 
@@ -97,6 +97,14 @@ sdk (leaf — no internal deps)
 - **Event system** — async pub/sub EventBus + WebSocket real-time streaming
 - **Settings hot-reload** — encrypted secrets, audit log, runtime configuration
 - **Plugin system** — entry-point discovery for providers, strategies, services
+
+### CLI (`packages/cli/`)
+
+- **10 command groups** covering all platform API endpoints (models, training, inference, ensembles, A/B tests, budgets, settings, health, config)
+- **Rich terminal output** — tables and key-value dicts with `--json` machine-readable mode
+- **TOML multi-profile configuration** (`~/.artenic/config.toml`) with precedence: CLI flags > env vars > TOML > defaults
+- **Security hardening** — credential masking, TOML injection prevention, error message sanitization
+- **Async HTTP client** (httpx) with structured error handling for all SDK/platform exceptions
 
 ## Quick Start
 
@@ -140,6 +148,26 @@ ARTENIC_DATABASE_URL=postgresql+asyncpg://user:pass@localhost:5432/artenic \
   uv run python -m artenic_ai_platform
 ```
 
+### Use the CLI
+
+```bash
+# Check platform health
+artenic health check
+
+# Register and manage models
+artenic model register --name my-model --version 1.0 --type lightgbm
+artenic model list
+
+# Dispatch training
+artenic training dispatch --service my-svc --model my-model --provider local
+
+# Run predictions
+artenic predict my-service --data '{"feature": 1.5}'
+
+# JSON output for scripting
+artenic --json training list | jq '.[] | .job_id'
+```
+
 ### Docker Deployment
 
 ```bash
@@ -172,6 +200,7 @@ Run `just` to see all available commands. Key ones:
 | `just test-cov` | Run tests with coverage report |
 | `just test-sdk` | Run SDK tests only |
 | `just test-platform` | Run platform tests only |
+| `just test-cli` | Run CLI tests only |
 | `just dev-up` | Start PostgreSQL + MLflow |
 | `just dev-down` | Stop dev services |
 
