@@ -1,0 +1,182 @@
+"""FastAPI application factory with lifespan management."""
+
+from __future__ import annotations
+
+import logging
+from contextlib import asynccontextmanager
+from typing import TYPE_CHECKING
+
+from fastapi import FastAPI
+from fastapi.middleware.gzip import GZipMiddleware
+from starlette.middleware.cors import CORSMiddleware
+
+from artenic_ai_platform.ab_testing.router import router as ab_testing_router
+from artenic_ai_platform.budget.router import router as budget_router
+from artenic_ai_platform.budget.service import BudgetManager
+from artenic_ai_platform.config.crypto import SecretManager
+from artenic_ai_platform.db.engine import (
+    create_async_engine,
+    create_session_factory,
+    create_tables,
+)
+from artenic_ai_platform.deps import build_get_db
+from artenic_ai_platform.ensemble.router import router as ensemble_router
+from artenic_ai_platform.events.event_bus import EventBus
+from artenic_ai_platform.events.ws import router as ws_router
+from artenic_ai_platform.health.monitor import HealthMonitor
+from artenic_ai_platform.health.router import router as health_router
+from artenic_ai_platform.inference.router import router as inference_router
+from artenic_ai_platform.middleware.auth import AuthMiddleware
+from artenic_ai_platform.middleware.correlation import CorrelationIdMiddleware
+from artenic_ai_platform.middleware.errors import (
+    CatchAllErrorMiddleware,
+    register_error_handlers,
+)
+from artenic_ai_platform.middleware.logging import setup_logging
+from artenic_ai_platform.middleware.metrics import MetricsMiddleware
+from artenic_ai_platform.middleware.rate_limit import RateLimitMiddleware
+from artenic_ai_platform.providers.mock import MockProvider
+from artenic_ai_platform.registry.router import router as registry_router
+from artenic_ai_platform.routes.config import router as config_router
+from artenic_ai_platform.settings import PlatformSettings
+from artenic_ai_platform.tracking.mlflow_client import MLflowTracker
+from artenic_ai_platform.training.router import router as training_router
+
+if TYPE_CHECKING:
+    from collections.abc import AsyncGenerator
+
+logger = logging.getLogger(__name__)
+
+
+@asynccontextmanager
+async def _lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+    """Manage startup / shutdown of platform components."""
+    settings: PlatformSettings = app.state.settings
+
+    # --- Startup --------------------------------------------------------
+    engine = create_async_engine(settings.database_url)
+    session_factory = create_session_factory(engine)
+    await create_tables(engine)
+
+    secret_manager = SecretManager(settings.secret_key)
+
+    # MLflow tracker (optional)
+    mlflow = MLflowTracker(
+        tracking_uri=settings.mlflow_tracking_uri,
+        artifact_root=settings.mlflow_artifact_root,
+    )
+    await mlflow.setup()
+
+    # Training providers (mock always available; real providers added if enabled)
+    training_providers: dict[str, object] = {"mock": MockProvider()}
+
+    if settings.local.enabled:
+        from artenic_ai_platform.providers.local import LocalProvider
+
+        training_providers["local"] = LocalProvider(
+            work_dir=settings.local.work_dir,
+            max_concurrent_jobs=settings.local.max_concurrent_jobs,
+            default_timeout_hours=settings.local.default_timeout_hours,
+            gpu_enabled=settings.local.gpu_enabled,
+            python_executable=settings.local.python_executable,
+        )
+
+    # Event bus — shared async pub/sub
+    event_bus = EventBus()
+
+    # Health monitor — background loop
+    health_monitor = HealthMonitor(
+        session_factory,
+        event_bus=event_bus,
+        check_interval_seconds=getattr(settings.health, "check_interval_seconds", 60.0),
+        drift_threshold=getattr(settings.health, "drift_threshold", 0.1),
+    )
+
+    app.state.engine = engine
+    app.state.session_factory = session_factory
+    app.state.secret_manager = secret_manager
+    app.state.mlflow = mlflow
+    app.state.training_providers = training_providers
+    app.state.event_bus = event_bus
+    app.state.health_monitor = health_monitor
+
+    # Budget manager factory — creates a BudgetManager per-request
+    def _budget_factory(session: object) -> BudgetManager:
+        return BudgetManager(
+            session,  # type: ignore[arg-type]
+            enforcement_mode=settings.budget.enforcement_mode,
+            alert_threshold_pct=settings.budget.alert_threshold_pct,
+        )
+
+    app.state.budget_manager_factory = _budget_factory
+
+    # Wire the get_db dependency to the real session factory
+    app.state.get_db = build_get_db(session_factory)
+
+    # Start health monitor if enabled
+    if getattr(settings.health, "enabled", True):
+        health_monitor.start()
+
+    db_url = str(settings.database_url)
+    if "@" in db_url:
+        db_url = db_url.split("@")[0].rsplit(":", 1)[0] + ":***@" + db_url.split("@")[1]
+    logger.info("Platform started (database=%s)", db_url)
+
+    yield
+
+    # --- Shutdown -------------------------------------------------------
+    health_monitor.stop()
+    await engine.dispose()
+    logger.info("Platform shut down")
+
+
+def create_app(settings: PlatformSettings | None = None) -> FastAPI:
+    """Build and return the configured FastAPI application."""
+    if settings is None:
+        settings = PlatformSettings()
+
+    setup_logging()
+
+    app = FastAPI(
+        title="Artenic AI Platform",
+        version="0.1.0",
+        lifespan=_lifespan,
+    )
+    app.state.settings = settings
+
+    # ----- Middleware stack (outer → inner) ----------------------------
+    # Order: Correlation → CatchAll → CORS → Auth → RateLimit → Metrics → GZip
+    # Added in reverse because FastAPI/Starlette processes them LIFO.
+    app.add_middleware(GZipMiddleware, minimum_size=1000)
+    app.add_middleware(MetricsMiddleware)
+    app.add_middleware(
+        RateLimitMiddleware,
+        per_minute=settings.rate_limit_per_minute,
+        burst=settings.rate_limit_burst,
+    )
+    app.add_middleware(AuthMiddleware, api_key=settings.api_key)
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=settings.cors_origins,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+    app.add_middleware(CatchAllErrorMiddleware)
+    app.add_middleware(CorrelationIdMiddleware)
+
+    # ----- Exception handlers -----------------------------------------
+    register_error_handlers(app)
+
+    # ----- Routers ---------------------------------------------------
+    app.include_router(health_router)
+    app.include_router(registry_router)
+    app.include_router(config_router)
+    app.include_router(training_router)
+    app.include_router(budget_router)
+    app.include_router(inference_router)
+    app.include_router(ensemble_router)
+    app.include_router(ab_testing_router)
+    app.include_router(ws_router)
+
+    return app
