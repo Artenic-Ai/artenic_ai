@@ -4,9 +4,13 @@
 </p>
 
 <p align="center">
+  <a href="https://ai.artenic.ch"><strong>Live Demo &rarr; ai.artenic.ch</strong></a>
+</p>
+
+<p align="center">
   <img src="https://img.shields.io/badge/python-3.12%2B-blue" alt="Python">
   <img src="https://img.shields.io/badge/license-Apache%202.0-green" alt="License">
-  <img src="https://img.shields.io/badge/tests-2176%20passed-brightgreen" alt="Tests">
+  <img src="https://img.shields.io/badge/tests-2227%20passed-brightgreen" alt="Tests">
   <img src="https://img.shields.io/badge/coverage-100%25-brightgreen" alt="Coverage">
 </p>
 
@@ -18,11 +22,14 @@
 AI models at scale. It dispatches training jobs locally or to 16+ cloud providers, manages model lifecycle
 with ensemble orchestration, enforces budgets, and serves predictions through a unified API gateway.
 
+Try it now: **[ai.artenic.ch](https://ai.artenic.ch)** — full demo dashboard with realistic mock data.
+
 ## Architecture
 
 ```
                  ┌────────────┐
                  │  Dashboard │  React 19 + Vite + Tailwind
+                 │            │  ai.artenic.ch
                  └─────┬──────┘
                        │ REST / WebSocket
                  ┌─────┴──────┐
@@ -47,7 +54,7 @@ artenic_ai/
 │   ├── platform/      # Central platform — Gateway, Registry, Orchestrator, Monitoring
 │   ├── cli/           # Command-line interface — manage platform via terminal
 │   └── optimizer/     # Training optimizer — LTR-based instance selection (stub)
-├── dashboard/         # React dashboard (stub)
+├── dashboard/         # React dashboard — ai.artenic.ch
 ├── pyproject.toml     # Workspace root configuration
 ├── justfile           # Development commands
 └── docker-compose.dev.yml  # PostgreSQL + MLflow
@@ -61,7 +68,7 @@ artenic_ai/
 | `platform` | FastAPI gateway, registry, training orchestrator, 15 providers | **Complete** | 1362 | 100% |
 | `cli` | Command-line interface — 10 command groups, 40+ subcommands | **Complete** | 159 | 100% |
 | `optimizer` | LTR-based training instance selection | Stub | — | — |
-| `dashboard` | React admin UI | Stub | — | — |
+| `dashboard` | React admin UI — 9 pages, dark theme, demo mode | **Complete** | 51 | — |
 
 ### Dependency Graph
 
@@ -106,6 +113,14 @@ sdk (leaf — no internal deps)
 - **Security hardening** — credential masking, TOML injection prevention, error message sanitization
 - **Async HTTP client** (httpx) with structured error handling for all SDK/platform exceptions
 
+### Dashboard (`dashboard/`) — [ai.artenic.ch](https://ai.artenic.ch)
+
+- **9 pages** — Overview, Model Registry, Training Jobs, Inference Playground, Ensembles, A/B Tests, Budgets, Settings, Health Monitoring
+- **Dark theme** — professional Grafana/Vercel-inspired palette with semantic color tokens
+- **Demo mode** — realistic mock data (8 models, 12 training jobs, 3 ensembles, 3 A/B tests, 4 budget rules) — no backend required
+- **15 UI components** — DataTable with sort/pagination, Dialog with a11y, Charts (area, bar, line), Toast notifications
+- **Stack** — React 19, Vite 7, Tailwind CSS 4, Recharts 3, TanStack React Query 5, TypeScript strict
+
 ## Quick Start
 
 ### Prerequisites
@@ -147,6 +162,17 @@ uv run python -m artenic_ai_platform
 ARTENIC_DATABASE_URL=postgresql+asyncpg://user:pass@localhost:5432/artenic \
   uv run python -m artenic_ai_platform
 ```
+
+### Run the Dashboard
+
+```bash
+cd dashboard
+npm install
+npm run dev          # Dev server on http://localhost:5173
+```
+
+The dashboard runs in demo mode by default (`VITE_DEMO_MODE=true`) with realistic mock data.
+To connect to a running platform, set `VITE_DEMO_MODE=false` and configure `VITE_API_URL`.
 
 ### Use the CLI
 

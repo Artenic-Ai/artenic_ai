@@ -81,6 +81,44 @@ ARTENIC_MLFLOW_TRACKING_URI=http://localhost:5000 \
   uv run python -m artenic_ai_platform
 ```
 
+## Dashboard Development
+
+The dashboard is a standalone React app in `dashboard/`.
+
+### Prerequisites
+
+- Node.js 22+
+- npm
+
+### Quick Start
+
+```bash
+cd dashboard
+npm install
+npm run dev          # Dev server on http://localhost:5173
+npm test             # Run tests (Vitest)
+npm run build        # Production build
+```
+
+### Demo Mode
+
+The dashboard runs in **demo mode** by default (`VITE_DEMO_MODE=true`), serving realistic
+mock data without a backend. This is what powers the live demo at **[ai.artenic.ch](https://ai.artenic.ch)**.
+
+To connect to a running platform server, set `VITE_DEMO_MODE=false` and `VITE_API_URL`
+to the platform URL.
+
+### Dashboard Patterns
+
+- **TypeScript strict** with `noUncheckedIndexedAccess`
+- **Tailwind CSS 4** with `@theme` syntax for semantic design tokens
+- **React Router 7** with lazy-loaded pages (`React.lazy()` + Suspense)
+- **TanStack React Query 5** with query key factory pattern (`lib/query-keys.ts`)
+- **Vitest** + `@testing-library/react` for component and integration tests
+- Shared UI components in `components/ui/` (Button, Badge, Card, DataTable, Dialog, etc.)
+- Error states with retry on all data-fetching pages
+- Demo/real API toggle is transparent — hooks never know which mode is active
+
 ## Code Style
 
 - **Python 3.12+** features encouraged (`from __future__ import annotations` in all files)

@@ -1,0 +1,48 @@
+import type { ModelHealth } from "@/types/api";
+
+export const MOCK_MODEL_HEALTH: ModelHealth[] = [
+  {
+    model_id: "mdl-a1b2c3d4",
+    status: "healthy",
+    error_rate: 0.002,
+    avg_latency_ms: 45,
+    p95_latency_ms: 78,
+    p99_latency_ms: 120,
+    drift_score: 0.02,
+    total_predictions: 284_310,
+    last_checked: "2026-02-17T15:30:00Z",
+  },
+  {
+    model_id: "mdl-m3n4o5p6",
+    status: "degraded",
+    error_rate: 0.12,
+    avg_latency_ms: 180,
+    p95_latency_ms: 340,
+    p99_latency_ms: 520,
+    drift_score: 0.15,
+    total_predictions: 91_450,
+    last_checked: "2026-02-17T15:28:00Z",
+  },
+  {
+    model_id: "mdl-q7r8s9t0",
+    status: "healthy",
+    error_rate: 0.001,
+    avg_latency_ms: 8,
+    p95_latency_ms: 15,
+    p99_latency_ms: 22,
+    drift_score: 0.01,
+    total_predictions: 1_523_000,
+    last_checked: "2026-02-17T15:32:00Z",
+  },
+  {
+    model_id: "mdl-e5f6g7h8",
+    status: "unhealthy",
+    error_rate: 0.52,
+    avg_latency_ms: 340,
+    p95_latency_ms: 890,
+    p99_latency_ms: 1200,
+    drift_score: 0.31,
+    total_predictions: 45_200,
+    last_checked: "2026-02-17T15:25:00Z",
+  },
+];

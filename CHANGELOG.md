@@ -3,6 +3,51 @@
 All notable changes to this project will be documented in this file.
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.4.0] — 2026-02-18
+
+### Step 5 — Dashboard (`dashboard/`) — [ai.artenic.ch](https://ai.artenic.ch)
+
+#### Live Demo
+- Deployed at **[ai.artenic.ch](https://ai.artenic.ch)** — full demo with realistic mock data, no backend required
+
+#### Pages (9)
+- **Overview** — KPI cards, recent activity feed, training status, budget spending chart
+- **Model Registry** — list with search/filter, detail view with metadata + promotion history
+- **Training Jobs** — list with status badges, detail view with provider info + logs
+- **Inference Playground** — interactive JSON editor, model selector, response viewer
+- **Ensembles** — list + detail with member models and strategy configuration
+- **A/B Tests** — list + detail with variant metrics and statistical results
+- **Budgets** — rules management, spending summary, provider spending chart (Recharts)
+- **Settings** — schema-driven form with section navigation, runtime hot-reload
+- **Health Monitoring** — model health table with drift/error/latency indicators
+
+#### UI & Design
+- Dark theme — professional Grafana/Vercel-inspired palette with semantic color tokens
+- 15 UI components: Button, Badge, Card, DataTable (sort/pagination), Dialog (a11y: aria-modal, Escape, focus management), EmptyState, ErrorState, Input, JsonEditor, Spinner, StatusDot, Toast (success/error/warning/info, auto-dismiss), DetailRow
+- 3 chart types via Recharts: AreaChart, BarChart, LineChart
+- Lazy-loaded pages with React.lazy() + Suspense
+- 404 catch-all route
+
+#### Architecture
+- **Demo mode** — `VITE_DEMO_MODE=true` at api-client level, transparent to hooks/components
+- Mock data: 8 models, 12 training jobs, 3 ensembles, 3 A/B tests, 4 budget rules, activity feed, health reports
+- TanStack React Query with query key factory pattern
+- API client with demo/real mode toggle (same hooks work for both)
+- Error states on all pages with retry capability
+
+#### Stack
+- React 19, Vite 7, Tailwind CSS 4 (`@theme` syntax), TypeScript 5.7 strict + `noUncheckedIndexedAccess`
+- Recharts 3, TanStack React Query 5, Lucide React, React Router 7
+
+#### Quality
+- 51 tests (Vitest + @testing-library/react), 6 test suites
+- `tsc --noEmit` strict — 0 errors
+- Vite build — clean, no warnings
+- CI: added `npm test` to dashboard job
+- Security audit: 14 corrections applied (useMemo optimizations, shared components extraction, query key consistency, error states, accessibility fixes)
+
+---
+
 ## [0.3.0] — 2026-02-17
 
 ### Step 4 — CLI (`packages/cli/`)
