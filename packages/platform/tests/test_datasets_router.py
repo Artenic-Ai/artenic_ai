@@ -547,9 +547,7 @@ class TestGetLineage:
 
 
 class TestStorageOptionsContinueBranch:
-    async def test_compute_only_provider_is_skipped(
-        self, client: AsyncClient
-    ) -> None:
+    async def test_compute_only_provider_is_skipped(self, client: AsyncClient) -> None:
         """A catalog provider with only compute capability is skipped."""
         from unittest.mock import patch
 
@@ -579,9 +577,7 @@ class TestStorageOptionsContinueBranch:
 
         patched_catalog = {**PROVIDER_CATALOG, "fake-compute": fake_provider}
 
-        with patch(
-            "artenic_ai_platform.providers_hub.catalog.PROVIDER_CATALOG", patched_catalog
-        ):
+        with patch("artenic_ai_platform.providers_hub.catalog.PROVIDER_CATALOG", patched_catalog):
             resp = await client.get(f"{BASE}/storage-options")
 
         assert resp.status_code == 200
