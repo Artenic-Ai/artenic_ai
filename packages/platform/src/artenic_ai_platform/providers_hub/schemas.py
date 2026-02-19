@@ -138,3 +138,48 @@ class ProviderRegion(BaseModel):
     id: str
     name: str = ""
     description: str = ""
+
+
+# ---------------------------------------------------------------------------
+# Public catalog responses (no authentication required)
+# ---------------------------------------------------------------------------
+
+
+class CatalogComputeFlavor(BaseModel):
+    """A compute flavor from a provider's public pricing catalog."""
+
+    provider_id: str
+    name: str
+    vcpus: int = 0
+    memory_gb: float = 0.0
+    disk_gb: float = 0.0
+    gpu_type: str | None = None
+    gpu_count: int = 0
+    price_per_hour: float | None = None
+    currency: str = "EUR"
+    region: str = ""
+    category: str = ""
+
+
+class CatalogStorageTier(BaseModel):
+    """A storage tier from a provider's public pricing catalog."""
+
+    provider_id: str
+    name: str
+    type: str = "object_storage"
+    price_per_gb_month: float | None = None
+    currency: str = "EUR"
+    region: str = ""
+    description: str = ""
+
+
+class CatalogResponse(BaseModel):
+    """Wrapper for public catalog data with metadata."""
+
+    provider_id: str
+    provider_name: str
+    compute: list[CatalogComputeFlavor] = Field(default_factory=list)
+    storage: list[CatalogStorageTier] = Field(default_factory=list)
+    is_live: bool = True
+    cached: bool = False
+    last_fetched_at: datetime | None = None

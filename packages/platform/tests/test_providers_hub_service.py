@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 from typing import TYPE_CHECKING
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
@@ -16,6 +16,7 @@ from artenic_ai_platform.db.engine import (
 )
 from artenic_ai_platform.db.models import ProviderRecord
 from artenic_ai_platform.providers_hub.schemas import (
+    CatalogComputeFlavor,
     ComputeInstance,
     ConnectionTestResult,
     ProviderRegion,
@@ -23,7 +24,9 @@ from artenic_ai_platform.providers_hub.schemas import (
 )
 from artenic_ai_platform.providers_hub.service import (
     ProviderService,
+    _clear_catalog_cache,
     _clear_connector_cache,
+    _get_catalog_fetcher,
     _get_connector,
 )
 
@@ -129,7 +132,7 @@ class TestGetProvider:
     async def test_returns_detail(self, svc: ProviderService) -> None:
         detail = await svc.get_provider("ovh")
         assert detail.id == "ovh"
-        assert len(detail.credential_fields) >= 4
+        assert len(detail.credential_fields) >= 3
         assert detail.has_credentials is False
 
     async def test_unknown_raises(self, svc: ProviderService) -> None:
@@ -713,3 +716,184 @@ class TestResolveActiveProviderUnknown:
         """list_storage_for_provider with unknown id raises ValueError."""
         with pytest.raises(ValueError, match="Unknown provider"):
             await svc.list_storage_for_provider("nonexistent_provider_xyz")
+
+
+# ======================================================================
+# Public catalog service tests
+# ======================================================================
+
+
+class TestGetCatalogFetcher:
+    def test_ovh_fetcher(self) -> None:
+        _clear_catalog_cache()
+        from artenic_ai_platform.providers_hub.public_catalog.ovh import OvhCatalogFetcher
+
+        fetcher = _get_catalog_fetcher("ovh")
+        assert isinstance(fetcher, OvhCatalogFetcher)
+        _clear_catalog_cache()
+
+    def test_infomaniak_fetcher(self) -> None:
+        _clear_catalog_cache()
+        from artenic_ai_platform.providers_hub.public_catalog.infomaniak import (
+            InfomaniakCatalogFetcher,
+        )
+
+        fetcher = _get_catalog_fetcher("infomaniak")
+        assert isinstance(fetcher, InfomaniakCatalogFetcher)
+        _clear_catalog_cache()
+
+    def test_scaleway_fetcher(self) -> None:
+        _clear_catalog_cache()
+        from artenic_ai_platform.providers_hub.public_catalog.scaleway import (
+            ScalewayCatalogFetcher,
+        )
+
+        fetcher = _get_catalog_fetcher("scaleway")
+        assert isinstance(fetcher, ScalewayCatalogFetcher)
+        _clear_catalog_cache()
+
+    def test_vastai_fetcher(self) -> None:
+        _clear_catalog_cache()
+        from artenic_ai_platform.providers_hub.public_catalog.vastai import (
+            VastaiCatalogFetcher,
+        )
+
+        fetcher = _get_catalog_fetcher("vastai")
+        assert isinstance(fetcher, VastaiCatalogFetcher)
+        _clear_catalog_cache()
+
+    def test_aws_fetcher(self) -> None:
+        _clear_catalog_cache()
+        from artenic_ai_platform.providers_hub.public_catalog.aws import AwsCatalogFetcher
+
+        fetcher = _get_catalog_fetcher("aws")
+        assert isinstance(fetcher, AwsCatalogFetcher)
+        _clear_catalog_cache()
+
+    def test_gcp_fetcher(self) -> None:
+        _clear_catalog_cache()
+        from artenic_ai_platform.providers_hub.public_catalog.gcp import GcpCatalogFetcher
+
+        fetcher = _get_catalog_fetcher("gcp")
+        assert isinstance(fetcher, GcpCatalogFetcher)
+        _clear_catalog_cache()
+
+    def test_azure_fetcher(self) -> None:
+        _clear_catalog_cache()
+        from artenic_ai_platform.providers_hub.public_catalog.azure import AzureCatalogFetcher
+
+        fetcher = _get_catalog_fetcher("azure")
+        assert isinstance(fetcher, AzureCatalogFetcher)
+        _clear_catalog_cache()
+
+    def test_cache_hit(self) -> None:
+        _clear_catalog_cache()
+        first = _get_catalog_fetcher("ovh")
+        second = _get_catalog_fetcher("ovh")
+        assert first is second
+        _clear_catalog_cache()
+
+    def test_unknown_raises(self) -> None:
+        _clear_catalog_cache()
+        with pytest.raises(ValueError, match="No catalog fetcher"):
+            _get_catalog_fetcher("nonexistent")
+        _clear_catalog_cache()
+
+
+class TestCatalogService:
+    async def test_get_provider_catalog(self, svc: ProviderService) -> None:
+        _clear_catalog_cache()
+        mock_fetcher = MagicMock()
+        mock_fetcher.fetch_compute_catalog = AsyncMock(
+            return_value=[
+                CatalogComputeFlavor(provider_id="ovh", name="b2-30", vcpus=8, memory_gb=30.0),
+            ]
+        )
+        mock_fetcher.fetch_storage_catalog = AsyncMock(return_value=[])
+        mock_fetcher.supports_live_catalog.return_value = True
+        with patch(
+            "artenic_ai_platform.providers_hub.service._get_catalog_fetcher",
+            return_value=mock_fetcher,
+        ):
+            result = await svc.get_provider_catalog("ovh")
+        assert result.provider_id == "ovh"
+        assert result.provider_name == "OVH Public Cloud"
+        assert len(result.compute) == 1
+        assert result.cached is False
+        assert result.is_live is True
+        _clear_catalog_cache()
+
+    async def test_get_provider_catalog_cached(self, svc: ProviderService) -> None:
+        _clear_catalog_cache()
+        mock_fetcher = MagicMock()
+        mock_fetcher.fetch_compute_catalog = AsyncMock(
+            return_value=[
+                CatalogComputeFlavor(provider_id="ovh", name="b2-30"),
+            ]
+        )
+        mock_fetcher.fetch_storage_catalog = AsyncMock(return_value=[])
+        mock_fetcher.supports_live_catalog.return_value = True
+        with patch(
+            "artenic_ai_platform.providers_hub.service._get_catalog_fetcher",
+            return_value=mock_fetcher,
+        ):
+            first = await svc.get_provider_catalog("ovh")
+            second = await svc.get_provider_catalog("ovh")
+        assert first.cached is False
+        assert second.cached is True
+        # Fetcher should only be called once (second call uses cache)
+        assert mock_fetcher.fetch_compute_catalog.call_count == 1
+        _clear_catalog_cache()
+
+    async def test_get_provider_catalog_unknown_raises(self, svc: ProviderService) -> None:
+        with pytest.raises(ValueError, match="Unknown provider"):
+            await svc.get_provider_catalog("nonexistent_xyz")
+
+    async def test_get_catalog_compute_gpu_only(self, svc: ProviderService) -> None:
+        _clear_catalog_cache()
+        mock_fetcher = MagicMock()
+        mock_fetcher.fetch_compute_catalog = AsyncMock(
+            return_value=[
+                CatalogComputeFlavor(provider_id="ovh", name="b2-30"),
+                CatalogComputeFlavor(
+                    provider_id="ovh", name="gpu-a100", gpu_type="A100", gpu_count=1
+                ),
+            ]
+        )
+        mock_fetcher.fetch_storage_catalog = AsyncMock(return_value=[])
+        mock_fetcher.supports_live_catalog.return_value = True
+        with patch(
+            "artenic_ai_platform.providers_hub.service._get_catalog_fetcher",
+            return_value=mock_fetcher,
+        ):
+            result = await svc.get_catalog_compute("ovh", gpu_only=True)
+        assert len(result) == 1
+        assert result[0].gpu_type == "A100"
+        _clear_catalog_cache()
+
+    async def test_get_all_catalog_compute_tolerates_error(
+        self,
+        svc: ProviderService,
+    ) -> None:
+        _clear_catalog_cache()
+        with patch(
+            "artenic_ai_platform.providers_hub.service._get_catalog_fetcher",
+            side_effect=RuntimeError("Boom"),
+        ):
+            result = await svc.get_all_catalog_compute()
+        # All providers fail → empty list
+        assert result == []
+        _clear_catalog_cache()
+
+    async def test_get_all_catalog_storage_tolerates_error(
+        self,
+        svc: ProviderService,
+    ) -> None:
+        _clear_catalog_cache()
+        with patch(
+            "artenic_ai_platform.providers_hub.service._get_catalog_fetcher",
+            side_effect=RuntimeError("Boom"),
+        ):
+            result = await svc.get_all_catalog_storage()
+        assert result == []
+        _clear_catalog_cache()

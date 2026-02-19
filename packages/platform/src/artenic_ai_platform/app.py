@@ -192,7 +192,7 @@ def create_app(settings: PlatformSettings | None = None) -> FastAPI:
 
     app = FastAPI(
         title="Artenic AI Platform",
-        version="0.1.0",
+        version="0.6.0",
         lifespan=_lifespan,
     )
     app.state.settings = settings

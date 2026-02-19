@@ -17,6 +17,9 @@ from artenic_ai_platform.providers_hub.catalog import (
 from artenic_ai_platform.providers_hub.connectors.base import ConnectorContext
 from artenic_ai_platform.providers_hub.schemas import (
     CapabilityOut,
+    CatalogComputeFlavor,
+    CatalogResponse,
+    CatalogStorageTier,
     ComputeInstance,
     ConfigFieldOut,
     ConnectionTestResult,
@@ -32,6 +35,7 @@ if TYPE_CHECKING:
 
     from artenic_ai_platform.config.crypto import SecretManager
     from artenic_ai_platform.providers_hub.connectors.base import ProviderConnector
+    from artenic_ai_platform.providers_hub.public_catalog.base import CatalogFetcher
 
 logger = logging.getLogger(__name__)
 
@@ -106,6 +110,79 @@ def _clear_connector_cache() -> None:
 
 
 # ---------------------------------------------------------------------------
+# Public catalog fetcher registry
+# ---------------------------------------------------------------------------
+
+from artenic_ai_platform.providers_hub.public_catalog.base import CatalogCache  # noqa: E402
+
+_CATALOG_CACHE = CatalogCache(ttl_seconds=3600.0)
+_CATALOG_FETCHER_CACHE: dict[str, CatalogFetcher] = {}
+
+
+def _get_catalog_fetcher(provider_id: str) -> CatalogFetcher:
+    """Lazy-load and cache a catalog fetcher by provider ID."""
+    if provider_id in _CATALOG_FETCHER_CACHE:
+        return _CATALOG_FETCHER_CACHE[provider_id]
+
+    fetcher: CatalogFetcher
+
+    if provider_id == "ovh":
+        from artenic_ai_platform.providers_hub.public_catalog.ovh import (
+            OvhCatalogFetcher,
+        )
+
+        fetcher = OvhCatalogFetcher()
+    elif provider_id == "infomaniak":
+        from artenic_ai_platform.providers_hub.public_catalog.infomaniak import (
+            InfomaniakCatalogFetcher,
+        )
+
+        fetcher = InfomaniakCatalogFetcher()
+    elif provider_id == "scaleway":
+        from artenic_ai_platform.providers_hub.public_catalog.scaleway import (
+            ScalewayCatalogFetcher,
+        )
+
+        fetcher = ScalewayCatalogFetcher()
+    elif provider_id == "vastai":
+        from artenic_ai_platform.providers_hub.public_catalog.vastai import (
+            VastaiCatalogFetcher,
+        )
+
+        fetcher = VastaiCatalogFetcher()
+    elif provider_id == "aws":
+        from artenic_ai_platform.providers_hub.public_catalog.aws import (
+            AwsCatalogFetcher,
+        )
+
+        fetcher = AwsCatalogFetcher()
+    elif provider_id == "gcp":
+        from artenic_ai_platform.providers_hub.public_catalog.gcp import (
+            GcpCatalogFetcher,
+        )
+
+        fetcher = GcpCatalogFetcher()
+    elif provider_id == "azure":
+        from artenic_ai_platform.providers_hub.public_catalog.azure import (
+            AzureCatalogFetcher,
+        )
+
+        fetcher = AzureCatalogFetcher()
+    else:
+        msg = f"No catalog fetcher for provider: {provider_id}"
+        raise ValueError(msg)
+
+    _CATALOG_FETCHER_CACHE[provider_id] = fetcher
+    return fetcher
+
+
+def _clear_catalog_cache() -> None:
+    """Clear the catalog cache and fetcher cache (useful for tests)."""
+    _CATALOG_CACHE.clear()
+    _CATALOG_FETCHER_CACHE.clear()
+
+
+# ---------------------------------------------------------------------------
 # Service
 # ---------------------------------------------------------------------------
 
@@ -122,13 +199,41 @@ class ProviderService:
         self._secrets = secret_manager
 
     # ------------------------------------------------------------------
+    # Catalog sync — ensure all catalog providers have a DB record
+    # ------------------------------------------------------------------
+
+    async def _sync_catalog(self) -> dict[str, ProviderRecord]:
+        """Create ProviderRecord rows for any catalog entry missing from DB.
+
+        Returns a mapping of provider_id → ProviderRecord for all
+        catalog providers.
+        """
+        rows = (await self._session.execute(select(ProviderRecord))).scalars().all()
+        db_map: dict[str, ProviderRecord] = {r.id: r for r in rows}
+
+        created = False
+        for defn in PROVIDER_CATALOG.values():
+            if defn.id not in db_map:
+                rec = ProviderRecord(
+                    id=defn.id,
+                    display_name=defn.display_name,
+                )
+                self._session.add(rec)
+                db_map[defn.id] = rec
+                created = True
+
+        if created:
+            await self._session.flush()
+
+        return db_map
+
+    # ------------------------------------------------------------------
     # List providers (catalog merged with DB state)
     # ------------------------------------------------------------------
 
     async def list_providers(self) -> list[ProviderSummary]:
         """Return all known providers with their current state."""
-        rows = (await self._session.execute(select(ProviderRecord))).scalars().all()
-        db_map: dict[str, ProviderRecord] = {r.id: r for r in rows}
+        db_map = await self._sync_catalog()
 
         result: list[ProviderSummary] = []
         for defn in PROVIDER_CATALOG.values():
@@ -163,12 +268,13 @@ class ProviderService:
             raise ValueError(msg)
 
         rec = await self._session.get(ProviderRecord, provider_id)
+        if rec is None:
+            rec = ProviderRecord(id=defn.id, display_name=defn.display_name)
+            self._session.add(rec)
+            await self._session.flush()
 
-        config: dict[str, str] = {}
-        has_credentials = False
-        if rec is not None:
-            config = rec.config if rec.config else {}
-            has_credentials = bool(rec.credentials)
+        config: dict[str, str] = rec.config if rec.config else {}
+        has_credentials = bool(rec.credentials)
 
         return ProviderDetail(
             id=defn.id,
@@ -201,12 +307,12 @@ class ProviderService:
             ],
             config=config,
             has_credentials=has_credentials,
-            enabled=rec.enabled if rec else False,
-            status=rec.status if rec else "unconfigured",
-            status_message=rec.status_message if rec else "",
-            last_checked_at=rec.last_checked_at if rec else None,
-            created_at=rec.created_at if rec else None,
-            updated_at=rec.updated_at if rec else None,
+            enabled=rec.enabled,
+            status=rec.status,
+            status_message=rec.status_message,
+            last_checked_at=rec.last_checked_at,
+            created_at=rec.created_at,
+            updated_at=rec.updated_at,
         )
 
     # ------------------------------------------------------------------
@@ -502,3 +608,110 @@ class ProviderService:
             .all()
         )
         return [(r.id, r) for r in rows]
+
+    # ------------------------------------------------------------------
+    # Public catalog (no credentials needed)
+    # ------------------------------------------------------------------
+
+    async def get_provider_catalog(self, provider_id: str) -> CatalogResponse:
+        """Fetch public catalog (compute + storage) for a provider."""
+        defn = get_provider_definition(provider_id)
+        if defn is None:
+            msg = f"Unknown provider: {provider_id}"
+            raise ValueError(msg)
+
+        cache_key = f"catalog:{provider_id}"
+        cached = _CATALOG_CACHE.get(cache_key)
+        if cached is not None:
+            return CatalogResponse(
+                provider_id=provider_id,
+                provider_name=defn.display_name,
+                compute=cached["compute"],
+                storage=cached["storage"],
+                is_live=cached["is_live"],
+                cached=True,
+                last_fetched_at=cached["fetched_at"],
+            )
+
+        fetcher = _get_catalog_fetcher(provider_id)
+        compute = await fetcher.fetch_compute_catalog()
+        storage = await fetcher.fetch_storage_catalog()
+        now = datetime.now(UTC)
+
+        _CATALOG_CACHE.set(
+            cache_key,
+            {
+                "compute": compute,
+                "storage": storage,
+                "is_live": fetcher.supports_live_catalog(),
+                "fetched_at": now,
+            },
+        )
+
+        return CatalogResponse(
+            provider_id=provider_id,
+            provider_name=defn.display_name,
+            compute=compute,
+            storage=storage,
+            is_live=fetcher.supports_live_catalog(),
+            cached=False,
+            last_fetched_at=now,
+        )
+
+    async def get_catalog_compute(
+        self,
+        provider_id: str,
+        *,
+        gpu_only: bool = False,
+    ) -> list[CatalogComputeFlavor]:
+        """Fetch just the compute catalog for a provider."""
+        catalog = await self.get_provider_catalog(provider_id)
+        flavors = catalog.compute
+        if gpu_only:
+            flavors = [f for f in flavors if f.gpu_count > 0]
+        return flavors
+
+    async def get_catalog_storage(
+        self,
+        provider_id: str,
+    ) -> list[CatalogStorageTier]:
+        """Fetch just the storage catalog for a provider."""
+        catalog = await self.get_provider_catalog(provider_id)
+        return catalog.storage
+
+    async def get_all_catalog_compute(
+        self,
+        *,
+        gpu_only: bool = False,
+    ) -> list[CatalogComputeFlavor]:
+        """Aggregate compute catalog from all providers."""
+        result: list[CatalogComputeFlavor] = []
+        for provider_id in PROVIDER_CATALOG:
+            try:
+                flavors = await self.get_catalog_compute(
+                    provider_id,
+                    gpu_only=gpu_only,
+                )
+                result.extend(flavors)
+            except Exception:
+                logger.warning(
+                    "Failed to fetch catalog for provider %s",
+                    provider_id,
+                    exc_info=True,
+                )
+        return result
+
+    async def get_all_catalog_storage(self) -> list[CatalogStorageTier]:
+        """Aggregate storage catalog from all providers."""
+        result: list[CatalogStorageTier] = []
+        for provider_id in PROVIDER_CATALOG:
+            try:
+                storage = await self.get_catalog_storage(provider_id)
+                result.extend(storage)
+            except Exception:
+                logger.warning(
+                    "Failed to fetch storage catalog for provider %s",
+                    provider_id,
+                    exc_info=True,
+                )
+        return result

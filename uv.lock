@@ -72,7 +72,7 @@ wheels = [
 
 [[package]]
 name = "artenic-ai"
-version = "0.1.0"
+version = "0.6.0"
 source = { virtual = "." }
 
 [package.dev-dependencies]
@@ -105,7 +105,7 @@ dev = [
 
 [[package]]
 name = "artenic-ai-cli"
-version = "0.1.0"
+version = "0.6.0"
 source = { editable = "packages/cli" }
 dependencies = [
     { name = "artenic-ai-sdk" },
@@ -124,7 +124,7 @@ requires-dist = [
 
 [[package]]
 name = "artenic-ai-platform"
-version = "0.1.0"
+version = "0.6.0"
 source = { editable = "packages/platform" }
 dependencies = [
     { name = "alembic" },
@@ -204,7 +204,7 @@ provides-extras = ["test", "gcp", "aws", "azure", "openstack", "k8s"]
 
 [[package]]
 name = "artenic-ai-sdk"
-version = "0.1.0"
+version = "0.6.0"
 source = { editable = "packages/sdk" }
 dependencies = [
     { name = "numpy" },
@@ -242,7 +242,7 @@ provides-extras = ["torch", "onnx", "client"]
 
 [[package]]
 name = "artenic-optimizer"
-version = "0.1.0"
+version = "0.6.0"
 source = { editable = "packages/optimizer" }
 dependencies = [
     { name = "artenic-ai-sdk" },

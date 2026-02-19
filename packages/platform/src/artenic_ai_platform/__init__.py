@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-__version__ = "0.1.0"
+__version__ = "0.6.0"
 
 from artenic_ai_platform.app import create_app
 from artenic_ai_platform.settings import PlatformSettings

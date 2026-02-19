@@ -456,7 +456,7 @@ class TestPublicAPI:
     def test_version(self) -> None:
         import artenic_ai_sdk
 
-        assert artenic_ai_sdk.__version__ == "0.1.0"
+        assert artenic_ai_sdk.__version__ == "0.6.0"
 
     def test_all_exports_are_importable(self) -> None:
         import artenic_ai_sdk

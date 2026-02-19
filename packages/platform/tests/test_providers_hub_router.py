@@ -122,7 +122,7 @@ class TestListProviders:
         assert ovh["display_name"] == "OVH Public Cloud"
         assert ovh["enabled"] is False
         assert ovh["status"] == "unconfigured"
-        assert len(ovh["capabilities"]) == 2
+        assert len(ovh["capabilities"]) == 3
 
     async def test_reflects_enabled_state(self, client: AsyncClient) -> None:
         await _configure_ovh(client)
@@ -150,7 +150,7 @@ class TestGetProvider:
         data = resp.json()
         assert data["id"] == "ovh"
         assert data["connector_type"] == "openstack"
-        assert len(data["credential_fields"]) >= 4
+        assert len(data["credential_fields"]) >= 3
         assert len(data["config_fields"]) >= 2
         assert data["has_credentials"] is False
 

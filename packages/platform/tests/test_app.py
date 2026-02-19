@@ -86,7 +86,7 @@ class TestCreateApp:
             )
         )
         assert app.title == "Artenic AI Platform"
-        assert app.version == "0.1.0"
+        assert app.version == "0.6.0"
 
     def test_settings_stored_in_state(self) -> None:
         settings = PlatformSettings(

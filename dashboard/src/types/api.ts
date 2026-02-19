@@ -439,3 +439,39 @@ export interface ConfigureProviderRequest {
   credentials: Record<string, string>;
   config: Record<string, string>;
 }
+
+// ── Public Catalog ──────────────────────────────────────────────────────────
+
+export interface CatalogComputeFlavor {
+  provider_id: string;
+  name: string;
+  vcpus: number;
+  memory_gb: number;
+  disk_gb: number;
+  gpu_type: string | null;
+  gpu_count: number;
+  price_per_hour: number | null;
+  currency: string;
+  region: string;
+  category: string;
+}
+
+export interface CatalogStorageTier {
+  provider_id: string;
+  name: string;
+  type: string;
+  price_per_gb_month: number | null;
+  currency: string;
+  region: string;
+  description: string;
+}
+
+export interface CatalogResponse {
+  provider_id: string;
+  provider_name: string;
+  compute: CatalogComputeFlavor[];
+  storage: CatalogStorageTier[];
+  is_live: boolean;
+  cached: boolean;
+  last_fetched_at: string | null;
+}

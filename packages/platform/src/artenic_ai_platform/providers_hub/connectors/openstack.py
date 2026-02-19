@@ -67,8 +67,9 @@ class OpenStackConnector(ProviderConnector):
         _require_openstack()
         creds = ctx.credentials  # pragma: no cover
         cfg = ctx.config  # pragma: no cover
+        auth_url = cfg.get("auth_url") or creds.get("auth_url", "")  # pragma: no cover
         return openstack.connect(  # pragma: no cover
-            auth_url=creds.get("auth_url", ""),
+            auth_url=auth_url,
             project_id=creds.get("project_id", ""),
             username=creds.get("username", ""),
             password=creds.get("password", ""),

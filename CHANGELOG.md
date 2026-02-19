@@ -3,6 +3,43 @@
 All notable changes to this project will be documented in this file.
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.6.0] — 2026-02-19
+
+### Step 7 — Provider Hub Public Catalog
+
+#### Public Catalog — Pricing & Flavors (no authentication required)
+- `public_catalog/` module with `CatalogFetcher` ABC and in-memory TTL cache (1h default)
+- 7 catalog fetchers:
+  - **OVH** — `api.ovh.com/v1/cloud/price` (compute flavors + storage tiers)
+  - **Azure** — `prices.azure.com/api/retail/prices` (paginated OData, Linux VMs)
+  - **AWS** — `pricing.us-east-1.amazonaws.com` bulk JSON (EC2 EU-West-1, On-Demand)
+  - **GCP** — `cloudpricingcalculator.appspot.com` price list (Compute Engine + Cloud Storage)
+  - **Vast.ai** — `console.vast.ai/api/v0/bundles` GPU marketplace offers
+  - **Scaleway** — live products API with static fallback (10 instance types, 2 storage tiers)
+  - **Infomaniak** — static catalog (14 instance types, 2 storage tiers)
+- 3 new Pydantic models: `CatalogComputeFlavor`, `CatalogStorageTier`, `CatalogResponse`
+- 5 new REST endpoints (17 total for Provider Hub):
+  - `GET /api/v1/providers/catalog/compute` — aggregate compute catalog (all providers)
+  - `GET /api/v1/providers/catalog/storage` — aggregate storage catalog (all providers)
+  - `GET /api/v1/providers/{id}/catalog` — full provider catalog (compute + storage + metadata)
+  - `GET /api/v1/providers/{id}/catalog/compute` — provider compute flavors (with `gpu_only` filter)
+  - `GET /api/v1/providers/{id}/catalog/storage` — provider storage tiers
+
+#### Dashboard — Catalog Tab
+- "Catalog" tab on provider detail page (always visible, not gated by credentials)
+- Compute flavors table: Flavor, vCPUs, Memory, GPU, Price/hr, Category
+- Storage tiers table: Tier, Type, Price/GB/month, Description
+- Live/Static and Cached status badges
+- Mock catalog data for all 7 providers
+
+#### Quality
+- Platform: 1892 tests (338 new for providers + catalog), 100% coverage
+- mypy strict — 0 errors across 85 source files
+- ruff lint + format — clean
+- Dashboard: tsc + build clean
+
+---
+
 ## [0.5.0] — 2026-02-19
 
 ### Step 6 — Datasets — Full-Stack Feature (Platform + CLI + Dashboard)

@@ -1,6 +1,6 @@
 [project]
 name = "artenic-ai"
-version = "0.1.0"
+version = "0.6.0"
 description = "Open-Source ML Platform — Train, Serve & Scale AI Models"
 readme = "README.md"
 license = "Apache-2.0"

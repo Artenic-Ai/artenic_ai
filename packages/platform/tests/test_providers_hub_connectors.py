@@ -293,8 +293,11 @@ class TestCatalog:
         defn = get_provider_definition("ovh")
         assert defn is not None
         assert defn.connector_type == "openstack"
-        assert len(defn.capabilities) == 2
-        assert len(defn.credential_fields) == 4
+        assert len(defn.capabilities) == 3  # storage, compute, gpu
+        assert len(defn.credential_fields) == 3  # username, password, project_id
+        # auth_url moved to config_fields
+        config_keys = [f.key for f in defn.config_fields]
+        assert "auth_url" in config_keys
 
         all_defns = list_provider_definitions()
         assert len(all_defns) >= 7
@@ -305,8 +308,8 @@ class TestCatalog:
         defn = get_provider_definition("infomaniak")
         assert defn is not None
         assert defn.connector_type == "openstack"
-        assert len(defn.capabilities) == 2
-        assert len(defn.credential_fields) == 4
+        assert len(defn.capabilities) == 3  # storage, compute, gpu
+        assert len(defn.credential_fields) == 3  # username, password, project_id
 
     def test_scaleway_in_catalog(self) -> None:
         from artenic_ai_platform.providers_hub.catalog import get_provider_definition
@@ -314,7 +317,7 @@ class TestCatalog:
         defn = get_provider_definition("scaleway")
         assert defn is not None
         assert defn.connector_type == "scaleway"
-        assert len(defn.capabilities) == 2
+        assert len(defn.capabilities) == 3  # storage, compute, gpu
         assert len(defn.credential_fields) == 3
 
     def test_vastai_in_catalog(self) -> None:
@@ -332,7 +335,7 @@ class TestCatalog:
         defn = get_provider_definition("aws")
         assert defn is not None
         assert defn.connector_type == "aws"
-        assert len(defn.capabilities) == 2
+        assert len(defn.capabilities) == 3  # storage, compute, gpu
         assert len(defn.credential_fields) == 2
 
     def test_gcp_in_catalog(self) -> None:
@@ -341,7 +344,7 @@ class TestCatalog:
         defn = get_provider_definition("gcp")
         assert defn is not None
         assert defn.connector_type == "gcp"
-        assert len(defn.capabilities) == 2
+        assert len(defn.capabilities) == 3  # storage, compute, gpu
         assert len(defn.credential_fields) == 2
 
     def test_azure_in_catalog(self) -> None:

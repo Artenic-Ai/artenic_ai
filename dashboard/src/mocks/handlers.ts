@@ -21,6 +21,7 @@ import {
   MOCK_SETTINGS_VALUES,
 } from "./settings";
 import {
+  MOCK_PROVIDER_CATALOG,
   MOCK_PROVIDER_COMPUTE,
   MOCK_PROVIDER_DETAILS,
   MOCK_PROVIDER_REGIONS,
@@ -180,6 +181,18 @@ export async function handleDemoRequest<T>(
   // ── Providers ─────────────────────────────────────────────────────────────
   if (segments[0] === "providers" && method === "GET") {
     if (segments.length === 1) return MOCK_PROVIDERS as T;
+    // Aggregate catalog routes: /providers/catalog/compute, /providers/catalog/storage
+    if (segments[1] === "catalog" && segments.length === 3) {
+      const all = Object.values(MOCK_PROVIDER_CATALOG);
+      if (segments[2] === "compute") {
+        const gpuOnly = url.searchParams.get("gpu_only") === "true";
+        const flavors = all.flatMap((c) => c.compute);
+        return (gpuOnly ? flavors.filter((f) => f.gpu_count > 0) : flavors) as T;
+      }
+      if (segments[2] === "storage") {
+        return all.flatMap((c) => c.storage) as T;
+      }
+    }
     const pid = segments[1] ?? "";
     if (segments.length === 3) {
       if (segments[2] === "storage") {
@@ -190,6 +203,23 @@ export async function handleDemoRequest<T>(
       }
       if (segments[2] === "regions") {
         return (MOCK_PROVIDER_REGIONS[pid] ?? []) as T;
+      }
+      if (segments[2] === "catalog") {
+        const catalog = MOCK_PROVIDER_CATALOG[pid];
+        if (catalog) return catalog as T;
+        throw new ApiError(404, `Catalog for ${pid} not found`);
+      }
+    }
+    // /providers/{id}/catalog/compute, /providers/{id}/catalog/storage
+    if (segments.length === 4 && segments[2] === "catalog") {
+      const catalog = MOCK_PROVIDER_CATALOG[pid];
+      if (!catalog) throw new ApiError(404, `Catalog for ${pid} not found`);
+      if (segments[3] === "compute") {
+        const gpuOnly = url.searchParams.get("gpu_only") === "true";
+        return (gpuOnly ? catalog.compute.filter((f) => f.gpu_count > 0) : catalog.compute) as T;
+      }
+      if (segments[3] === "storage") {
+        return catalog.storage as T;
       }
     }
     const detail = MOCK_PROVIDER_DETAILS[pid];

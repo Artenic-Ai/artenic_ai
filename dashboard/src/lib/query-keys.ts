@@ -74,6 +74,8 @@ export const queryKeys = {
       [...queryKeys.providers.all, id, "compute"] as const,
     regions: (id: string) =>
       [...queryKeys.providers.all, id, "regions"] as const,
+    catalog: (id: string) =>
+      [...queryKeys.providers.all, id, "catalog"] as const,
   },
   activity: {
     all: ["activity"] as const,

@@ -89,18 +89,24 @@ PROVIDER_CATALOG: dict[str, ProviderDefinition] = {
                 "Public Cloud Instances",
                 "CPU and GPU compute instances via OpenStack Nova",
             ),
+            ProviderCapability(
+                "gpu",
+                "GPU Instances",
+                "NVIDIA GPU instances (V100, A100, L4, L40S)",
+            ),
         ),
         credential_fields=(
-            CredentialField(
-                "auth_url",
-                "Keystone Auth URL",
-                placeholder="https://auth.cloud.ovh.net/v3",
-            ),
             CredentialField("username", "OpenStack Username"),
             CredentialField("password", "OpenStack Password", secret=True),
             CredentialField("project_id", "Project ID"),
         ),
         config_fields=(
+            ConfigField(
+                "auth_url",
+                "Keystone Auth URL",
+                default="https://auth.cloud.ovh.net/v3",
+                description="OpenStack Identity endpoint",
+            ),
             ConfigField("region", "Default Region", default="GRA11"),
             ConfigField(
                 "user_domain_name",
@@ -136,18 +142,24 @@ PROVIDER_CATALOG: dict[str, ProviderDefinition] = {
                 "Public Cloud Instances",
                 "CPU and GPU compute instances via OpenStack Nova",
             ),
+            ProviderCapability(
+                "gpu",
+                "GPU Instances",
+                "NVIDIA GPU instances via OpenStack Nova",
+            ),
         ),
         credential_fields=(
-            CredentialField(
-                "auth_url",
-                "Keystone Auth URL",
-                placeholder="https://api.pub1.infomaniak.cloud/identity/v3",
-            ),
             CredentialField("username", "OpenStack Username"),
             CredentialField("password", "OpenStack Password", secret=True),
             CredentialField("project_id", "Project ID"),
         ),
         config_fields=(
+            ConfigField(
+                "auth_url",
+                "Keystone Auth URL",
+                default="https://api.pub1.infomaniak.cloud/identity/v3",
+                description="OpenStack Identity endpoint",
+            ),
             ConfigField("region", "Default Region", default="dc3-a"),
             ConfigField(
                 "user_domain_name",
@@ -182,6 +194,11 @@ PROVIDER_CATALOG: dict[str, ProviderDefinition] = {
                 "compute",
                 "Instances",
                 "CPU and GPU compute instances (Scaleway Instances)",
+            ),
+            ProviderCapability(
+                "gpu",
+                "GPU Instances",
+                "NVIDIA GPU instances (L4, L40S, H100)",
             ),
         ),
         credential_fields=(
@@ -237,6 +254,11 @@ PROVIDER_CATALOG: dict[str, ProviderDefinition] = {
                 "Amazon EC2",
                 "Elastic Compute Cloud — CPU and GPU instances",
             ),
+            ProviderCapability(
+                "gpu",
+                "GPU Instances",
+                "NVIDIA GPU instances (T4, V100, A100, H100, L4)",
+            ),
         ),
         credential_fields=(
             CredentialField("access_key_id", "Access Key ID", placeholder="AKIA..."),
@@ -270,6 +292,11 @@ PROVIDER_CATALOG: dict[str, ProviderDefinition] = {
                 "compute",
                 "Compute Engine",
                 "CPU and GPU virtual machines",
+            ),
+            ProviderCapability(
+                "gpu",
+                "GPU Instances",
+                "NVIDIA GPU instances (T4, V100, A100, H100, L4)",
             ),
         ),
         credential_fields=(

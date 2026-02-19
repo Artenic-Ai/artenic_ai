@@ -1,4 +1,4 @@
-"""Provider Hub REST API — 12 endpoints for cloud provider management."""
+"""Provider Hub REST API — 17 endpoints for cloud provider management."""
 
 from __future__ import annotations
 
@@ -8,6 +8,9 @@ from typing import TYPE_CHECKING, Annotated
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 
 from artenic_ai_platform.providers_hub.schemas import (
+    CatalogComputeFlavor,
+    CatalogResponse,
+    CatalogStorageTier,
     ComputeInstance,
     ConfigureProviderRequest,
     ConnectionTestResult,
@@ -74,8 +77,34 @@ async def list_all_compute(
     return await svc.list_all_compute_instances(region=region, gpu_only=gpu_only)
 
 
-# IMPORTANT: Routes with static paths (/capabilities/*) MUST be defined
-# above this dynamic /{provider_id} route to avoid shadowing.
+# ---------------------------------------------------------------------------
+# Public catalog endpoints (pricing/flavors from public APIs, no user creds)
+# ---------------------------------------------------------------------------
+
+
+@router.get(
+    "/catalog/compute",
+    response_model=list[CatalogComputeFlavor],
+)
+async def list_all_catalog_compute(
+    svc: Svc,
+    gpu_only: bool = Query(default=False),
+) -> list[CatalogComputeFlavor]:
+    """Aggregate public compute catalog from all providers."""
+    return await svc.get_all_catalog_compute(gpu_only=gpu_only)
+
+
+@router.get(
+    "/catalog/storage",
+    response_model=list[CatalogStorageTier],
+)
+async def list_all_catalog_storage(svc: Svc) -> list[CatalogStorageTier]:
+    """Aggregate public storage catalog from all providers."""
+    return await svc.get_all_catalog_storage()
+
+
+# IMPORTANT: Routes with static paths (/capabilities/*, /catalog/*) MUST be
+# defined above this dynamic /{provider_id} route to avoid shadowing.
 @router.get("/{provider_id}", response_model=ProviderDetail)
 async def get_provider(provider_id: str, svc: Svc) -> ProviderDetail:
     """Get full detail for a single provider."""
@@ -197,3 +226,54 @@ async def list_provider_regions(
         return await svc.list_regions_for_provider(provider_id)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+# ---------------------------------------------------------------------------
+# Per-provider public catalog
+# ---------------------------------------------------------------------------
+
+
+@router.get(
+    "/{provider_id}/catalog",
+    response_model=CatalogResponse,
+)
+async def get_provider_catalog(
+    provider_id: str,
+    svc: Svc,
+) -> CatalogResponse:
+    """Fetch public catalog (compute + storage pricing) for a provider."""
+    try:
+        return await svc.get_provider_catalog(provider_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@router.get(
+    "/{provider_id}/catalog/compute",
+    response_model=list[CatalogComputeFlavor],
+)
+async def get_provider_catalog_compute(
+    provider_id: str,
+    svc: Svc,
+    gpu_only: bool = Query(default=False),
+) -> list[CatalogComputeFlavor]:
+    """Fetch public compute catalog for a single provider."""
+    try:
+        return await svc.get_catalog_compute(provider_id, gpu_only=gpu_only)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@router.get(
+    "/{provider_id}/catalog/storage",
+    response_model=list[CatalogStorageTier],
+)
+async def get_provider_catalog_storage(
+    provider_id: str,
+    svc: Svc,
+) -> list[CatalogStorageTier]:
+    """Fetch public storage catalog for a single provider."""
+    try:
+        return await svc.get_catalog_storage(provider_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc

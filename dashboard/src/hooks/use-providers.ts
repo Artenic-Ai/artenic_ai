@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api-client";
 import { queryKeys } from "@/lib/query-keys";
 import type {
+  CatalogResponse,
   ConfigureProviderRequest,
   ConnectionTestResult,
   ProviderComputeInstance,
@@ -50,6 +51,14 @@ export function useProviderRegions(id: string) {
   return useQuery({
     queryKey: queryKeys.providers.regions(id),
     queryFn: () => apiFetch<ProviderRegion[]>(`/providers/${id}/regions`),
+    enabled: !!id,
+  });
+}
+
+export function useProviderCatalog(id: string) {
+  return useQuery({
+    queryKey: queryKeys.providers.catalog(id),
+    queryFn: () => apiFetch<CatalogResponse>(`/providers/${id}/catalog`),
     enabled: !!id,
   });
 }

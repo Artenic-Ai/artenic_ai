@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import {
   Cloud,
+  DollarSign,
   ExternalLink,
   HardDrive,
   Play,
@@ -28,6 +29,7 @@ import {
   useDisableProvider,
   useEnableProvider,
   useProvider,
+  useProviderCatalog,
   useProviderCompute,
   useProviderRegions,
   useProviderStorage,
@@ -35,6 +37,8 @@ import {
 } from "@/hooks/use-providers";
 import { formatBytes, formatDateTime, formatNumber } from "@/lib/format";
 import type {
+  CatalogComputeFlavor,
+  CatalogStorageTier,
   ProviderComputeInstance,
   ProviderRegion,
   ProviderStatus,
@@ -190,9 +194,116 @@ const REGION_COLUMNS: Column<ProviderRegion>[] = [
   },
 ];
 
+const CATALOG_COMPUTE_COLUMNS: Column<CatalogComputeFlavor>[] = [
+  {
+    key: "name",
+    header: "Flavor",
+    sortable: true,
+    sortValue: (r) => r.name,
+    render: (r) => (
+      <span className="font-mono text-text-primary">{r.name}</span>
+    ),
+  },
+  {
+    key: "vcpus",
+    header: "vCPUs",
+    sortable: true,
+    sortValue: (r) => r.vcpus,
+    render: (r) => <span className="text-text-secondary">{r.vcpus}</span>,
+  },
+  {
+    key: "memory",
+    header: "Memory",
+    sortable: true,
+    sortValue: (r) => r.memory_gb,
+    render: (r) => (
+      <span className="text-text-secondary">{r.memory_gb} GB</span>
+    ),
+  },
+  {
+    key: "gpu",
+    header: "GPU",
+    sortable: true,
+    sortValue: (r) => r.gpu_count,
+    render: (r) =>
+      r.gpu_type ? (
+        <span className="text-text-primary">
+          {r.gpu_count}x {r.gpu_type}
+        </span>
+      ) : (
+        <span className="text-text-muted">-</span>
+      ),
+  },
+  {
+    key: "price",
+    header: "Price/hr",
+    sortable: true,
+    sortValue: (r) => r.price_per_hour ?? 0,
+    render: (r) => (
+      <span className="text-text-secondary">
+        {r.price_per_hour != null
+          ? `${r.price_per_hour.toFixed(4)} ${r.currency}`
+          : "-"}
+      </span>
+    ),
+  },
+  {
+    key: "category",
+    header: "Category",
+    render: (r) => (
+      <span
+        className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${
+          r.category === "gpu"
+            ? "bg-accent/10 text-accent"
+            : "bg-surface-2 text-text-secondary"
+        }`}
+      >
+        {r.category || "general"}
+      </span>
+    ),
+  },
+];
+
+const CATALOG_STORAGE_COLUMNS: Column<CatalogStorageTier>[] = [
+  {
+    key: "name",
+    header: "Tier",
+    sortable: true,
+    sortValue: (r) => r.name,
+    render: (r) => (
+      <span className="font-medium text-text-primary">{r.name}</span>
+    ),
+  },
+  {
+    key: "type",
+    header: "Type",
+    render: (r) => <span className="text-text-secondary">{r.type}</span>,
+  },
+  {
+    key: "price",
+    header: "Price/GB/month",
+    sortable: true,
+    sortValue: (r) => r.price_per_gb_month ?? 0,
+    render: (r) => (
+      <span className="text-text-secondary">
+        {r.price_per_gb_month != null
+          ? `${r.price_per_gb_month.toFixed(4)} ${r.currency}`
+          : "-"}
+      </span>
+    ),
+  },
+  {
+    key: "description",
+    header: "Description",
+    render: (r) => (
+      <span className="text-text-muted">{r.description || "-"}</span>
+    ),
+  },
+];
+
 /* ── Tabs ─────────────────────────────────────────────────────────────────── */
 
-type Tab = "overview" | "configuration" | "storage" | "compute" | "regions";
+type Tab = "overview" | "configuration" | "catalog" | "storage" | "compute" | "regions";
 
 /* ── Page ─────────────────────────────────────────────────────────────────── */
 
@@ -210,6 +321,7 @@ export function ProviderDetailPage() {
   const { data: regions, isLoading: regionsLoading } = useProviderRegions(
     provider?.enabled ? id : "",
   );
+  const { data: catalog, isLoading: catalogLoading } = useProviderCatalog(id);
 
   const [tab, setTab] = useState<Tab>("overview");
   const [configOpen, setConfigOpen] = useState(false);
@@ -292,6 +404,7 @@ export function ProviderDetailPage() {
       label: "Configuration",
       icon: <Settings size={14} />,
     },
+    { key: "catalog", label: "Catalog", icon: <DollarSign size={14} /> },
     ...(provider.enabled
       ? [
           {
@@ -548,6 +661,62 @@ export function ProviderDetailPage() {
                 Edit Configuration
               </Button>
             </div>
+          )}
+        </div>
+      )}
+
+      {/* ── Catalog ───────────────────────────────────────────────────────── */}
+      {tab === "catalog" && (
+        <div role="tabpanel" className="space-y-6">
+          {catalogLoading ? (
+            <TableSkeleton rows={4} cols={6} />
+          ) : catalog ? (
+            <>
+              <div className="flex items-center gap-2">
+                <span
+                  className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${
+                    catalog.is_live
+                      ? "bg-success/10 text-success"
+                      : "bg-warning/10 text-warning"
+                  }`}
+                >
+                  {catalog.is_live ? "Live" : "Static"}
+                </span>
+                {catalog.cached && (
+                  <span className="inline-block rounded-full bg-surface-2 px-2 py-0.5 text-xs font-medium text-text-muted">
+                    Cached
+                  </span>
+                )}
+              </div>
+
+              <Card title="Compute Flavors">
+                {catalog.compute.length > 0 ? (
+                  <DataTable
+                    columns={CATALOG_COMPUTE_COLUMNS}
+                    data={catalog.compute}
+                    keyFn={(r) => r.name}
+                  />
+                ) : (
+                  <p className="text-sm text-text-muted">
+                    No compute flavors available.
+                  </p>
+                )}
+              </Card>
+
+              {catalog.storage.length > 0 && (
+                <Card title="Storage Tiers">
+                  <DataTable
+                    columns={CATALOG_STORAGE_COLUMNS}
+                    data={catalog.storage}
+                    keyFn={(r) => r.name}
+                  />
+                </Card>
+              )}
+            </>
+          ) : (
+            <p className="text-sm text-text-muted">
+              No catalog data available for this provider.
+            </p>
           )}
         </div>
       )}
