@@ -848,7 +848,7 @@ class ConfigOverrideRecord(Base):
 class DatasetRecord(Base):
     """A managed dataset with metadata and versioning."""
 
-    __tablename__ = "datasets"
+    __tablename__ = "artenic_datasets"
 
     id: Mapped[str] = mapped_column(
         String(36),
@@ -907,7 +907,7 @@ class DatasetRecord(Base):
 class DatasetVersionRecord(Base):
     """Immutable version snapshot of a dataset."""
 
-    __tablename__ = "dataset_versions"
+    __tablename__ = "artenic_dataset_versions"
     __table_args__ = (UniqueConstraint("dataset_id", "version"),)
 
     id: Mapped[int] = mapped_column(
@@ -917,7 +917,7 @@ class DatasetVersionRecord(Base):
     )
     dataset_id: Mapped[str] = mapped_column(
         String(36),
-        ForeignKey("datasets.id", ondelete="CASCADE"),
+        ForeignKey("artenic_datasets.id", ondelete="CASCADE"),
     )
     version: Mapped[int] = mapped_column(Integer)
     hash: Mapped[str] = mapped_column(String(128))
@@ -951,7 +951,7 @@ class DatasetVersionRecord(Base):
 class DatasetFileRecord(Base):
     """A single file within a dataset."""
 
-    __tablename__ = "dataset_files"
+    __tablename__ = "artenic_dataset_files"
 
     id: Mapped[int] = mapped_column(
         Integer,
@@ -960,7 +960,7 @@ class DatasetFileRecord(Base):
     )
     dataset_id: Mapped[str] = mapped_column(
         String(36),
-        ForeignKey("datasets.id", ondelete="CASCADE"),
+        ForeignKey("artenic_datasets.id", ondelete="CASCADE"),
     )
     version: Mapped[int] = mapped_column(Integer)
     filename: Mapped[str] = mapped_column(String(500))
@@ -991,7 +991,7 @@ class DatasetFileRecord(Base):
 class DatasetLineageRecord(Base):
     """Links a dataset version to a model or training job."""
 
-    __tablename__ = "dataset_lineage"
+    __tablename__ = "artenic_dataset_lineage"
     __table_args__ = (
         UniqueConstraint("dataset_id", "dataset_version", "entity_type", "entity_id"),
     )
@@ -1003,7 +1003,7 @@ class DatasetLineageRecord(Base):
     )
     dataset_id: Mapped[str] = mapped_column(
         String(36),
-        ForeignKey("datasets.id", ondelete="CASCADE"),
+        ForeignKey("artenic_datasets.id", ondelete="CASCADE"),
     )
     dataset_version: Mapped[int] = mapped_column(Integer)
     entity_type: Mapped[str] = mapped_column(String(50))
