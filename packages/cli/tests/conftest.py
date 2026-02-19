@@ -69,7 +69,20 @@ def patch_run_async() -> Any:
     @contextmanager
     def _patch(return_value: Any = None, side_effect: Any = None):  # type: ignore[no-untyped-def]
         target = "artenic_ai_cli._async.run_async"
-        with patch(target, return_value=return_value, side_effect=side_effect) as m:
+
+        _real_se = side_effect
+
+        def _close_and_apply(coro: Any) -> Any:
+            # Close the unawaited coroutine to suppress RuntimeWarning
+            if hasattr(coro, "close"):
+                coro.close()
+            if _real_se is not None:
+                if callable(_real_se) and not isinstance(_real_se, type):
+                    return _real_se(coro)
+                raise _real_se
+            return return_value
+
+        with patch(target, side_effect=_close_and_apply) as m:
             yield m
 
     return _patch

@@ -638,7 +638,7 @@ class OVHProvider(CloudProvider):
     def _extract_tarball(tar_path: str, dest_dir: str) -> None:
         """Extract a gzipped tarball into *dest_dir*."""
         with tarfile.open(tar_path, "r:gz") as tar:
-            tar.extractall(path=dest_dir)
+            tar.extractall(path=dest_dir, filter="data")
 
     def _estimate_cost(
         self,

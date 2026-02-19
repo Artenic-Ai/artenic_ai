@@ -63,6 +63,18 @@ export const queryKeys = {
     storageOptions: () =>
       [...queryKeys.datasets.all, "storage-options"] as const,
   },
+  providers: {
+    all: ["providers"] as const,
+    list: () => [...queryKeys.providers.all, "list"] as const,
+    detail: (id: string) =>
+      [...queryKeys.providers.all, "detail", id] as const,
+    storage: (id: string) =>
+      [...queryKeys.providers.all, id, "storage"] as const,
+    compute: (id: string) =>
+      [...queryKeys.providers.all, id, "compute"] as const,
+    regions: (id: string) =>
+      [...queryKeys.providers.all, id, "regions"] as const,
+  },
   activity: {
     all: ["activity"] as const,
   },

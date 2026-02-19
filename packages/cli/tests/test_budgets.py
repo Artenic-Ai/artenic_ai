@@ -49,7 +49,7 @@ class TestBudgetCreate:
                     "--scope",
                     "service",
                     "--scope-value",
-                    "trading",
+                    "my-service",
                     "--period",
                     "monthly",
                     "--limit-eur",
@@ -138,6 +138,6 @@ class TestBudgetSpending:
         data = [{"spent": 200, "limit": 500, "pct_used": 40}]
         with patch_run_async(return_value=data):
             result = runner.invoke(
-                cli, ["budget", "spending", "--scope", "service", "--scope-value", "trading"]
+                cli, ["budget", "spending", "--scope", "service", "--scope-value", "my-service"]
             )
             assert result.exit_code == 0

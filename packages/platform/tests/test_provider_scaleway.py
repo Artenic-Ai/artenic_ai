@@ -221,6 +221,7 @@ class TestScalewayUploadCode:
 
         # Mock the inner AsyncClient used for S3 upload
         inner_client = AsyncMock()
+        inner_client.get = AsyncMock(return_value=_mock_response(200, {"servers": []}))
         inner_client.put = AsyncMock(return_value=_mock_response(200))
         inner_client.aclose = AsyncMock()
         inner_client.__aenter__ = AsyncMock(return_value=inner_client)
@@ -244,6 +245,7 @@ class TestScalewayUploadCode:
         mock_httpx = scw_mod.httpx
 
         inner_client = AsyncMock()
+        inner_client.get = AsyncMock(return_value=_mock_response(200, {"servers": []}))
         inner_client.put = AsyncMock(side_effect=RuntimeError("upload failed"))
         inner_client.__aenter__ = AsyncMock(return_value=inner_client)
         inner_client.__aexit__ = AsyncMock(return_value=False)
@@ -725,6 +727,7 @@ class TestScalewayUploadCodeDirectory:
         (code_dir / "config.yaml").write_text("lr: 0.01")
 
         inner_client = AsyncMock()
+        inner_client.get = AsyncMock(return_value=_mock_response(200, {"servers": []}))
         inner_client.put = AsyncMock(return_value=_mock_response(200))
         inner_client.aclose = AsyncMock()
         inner_client.__aenter__ = AsyncMock(return_value=inner_client)

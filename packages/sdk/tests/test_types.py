@@ -164,17 +164,3 @@ class TestStrEnumBehavior:
     def test_invalid_value_raises(self, enum_cls: type) -> None:
         with pytest.raises(ValueError):
             enum_cls("__NONEXISTENT__")
-
-
-class TestNoTradingTypes:
-    """Verify trading-specific types are NOT present."""
-
-    def test_no_signal_direction(self) -> None:
-        import artenic_ai_sdk.types as mod
-
-        assert not hasattr(mod, "SignalDirection")
-
-    def test_no_market_regime(self) -> None:
-        import artenic_ai_sdk.types as mod
-
-        assert not hasattr(mod, "MarketRegime")

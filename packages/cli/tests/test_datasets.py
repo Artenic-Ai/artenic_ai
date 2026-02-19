@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
-from unittest.mock import patch
 
 from artenic_ai_cli.main import cli
 
@@ -132,22 +131,20 @@ class TestDatasetDelete:
 
 
 class TestDatasetUpload:
-    def test_upload(self, runner: CliRunner, tmp_path: Any) -> None:
+    def test_upload(self, runner: CliRunner, patch_run_async: Any, tmp_path: Any) -> None:
         sample = tmp_path / "data.csv"
         sample.write_text("a,b\n1,2\n")
 
-        with patch("artenic_ai_cli.commands.datasets._async.run_async") as mock_run:
-            mock_run.return_value = {"filename": "data.csv", "size": 8}
+        with patch_run_async(return_value={"filename": "data.csv", "size": 8}):
             result = runner.invoke(cli, ["dataset", "upload", "ds1", str(sample)])
             assert result.exit_code == 0
             assert "Uploaded" in result.stderr
 
-    def test_upload_json(self, runner: CliRunner, tmp_path: Any) -> None:
+    def test_upload_json(self, runner: CliRunner, patch_run_async: Any, tmp_path: Any) -> None:
         sample = tmp_path / "data.csv"
         sample.write_text("a,b\n1,2\n")
 
-        with patch("artenic_ai_cli.commands.datasets._async.run_async") as mock_run:
-            mock_run.return_value = {"filename": "data.csv", "size": 8}
+        with patch_run_async(return_value={"filename": "data.csv", "size": 8}):
             result = runner.invoke(cli, ["--json", "dataset", "upload", "ds1", str(sample)])
             assert result.exit_code == 0
             assert '"filename"' in result.output
@@ -158,18 +155,16 @@ class TestDatasetUpload:
 
 
 class TestDatasetDownload:
-    def test_download(self, runner: CliRunner, tmp_path: Any) -> None:
-        with patch("artenic_ai_cli.commands.datasets._async.run_async") as mock_run:
-            mock_run.return_value = b"col1,col2\n1,2\n"
-            dest = tmp_path / "out.csv"
+    def test_download(self, runner: CliRunner, patch_run_async: Any, tmp_path: Any) -> None:
+        dest = tmp_path / "out.csv"
+        with patch_run_async(return_value=b"col1,col2\n1,2\n"):
             result = runner.invoke(cli, ["dataset", "download", "ds1", "data.csv", "-o", str(dest)])
             assert result.exit_code == 0
             assert dest.read_bytes() == b"col1,col2\n1,2\n"
 
-    def test_download_json(self, runner: CliRunner, tmp_path: Any) -> None:
-        with patch("artenic_ai_cli.commands.datasets._async.run_async") as mock_run:
-            mock_run.return_value = b"content"
-            dest = tmp_path / "out.bin"
+    def test_download_json(self, runner: CliRunner, patch_run_async: Any, tmp_path: Any) -> None:
+        dest = tmp_path / "out.bin"
+        with patch_run_async(return_value=b"content"):
             result = runner.invoke(
                 cli, ["--json", "dataset", "download", "ds1", "file.bin", "-o", str(dest)]
             )
@@ -177,11 +172,10 @@ class TestDatasetDownload:
             assert '"downloaded"' in result.output
 
     def test_download_default_path(
-        self, runner: CliRunner, tmp_path: Any, monkeypatch: Any
+        self, runner: CliRunner, patch_run_async: Any, tmp_path: Any, monkeypatch: Any
     ) -> None:
         monkeypatch.chdir(tmp_path)
-        with patch("artenic_ai_cli.commands.datasets._async.run_async") as mock_run:
-            mock_run.return_value = b"data"
+        with patch_run_async(return_value=b"data"):
             result = runner.invoke(cli, ["dataset", "download", "ds1", "result.csv"])
             assert result.exit_code == 0
 

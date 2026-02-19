@@ -116,6 +116,16 @@ const SettingsPage = lazy(() =>
     default: m.SettingsPage,
   })),
 );
+const ProvidersListPage = lazy(() =>
+  import("@/pages/providers/providers-list").then((m) => ({
+    default: m.ProvidersListPage,
+  })),
+);
+const ProviderDetailPage = lazy(() =>
+  import("@/pages/providers/provider-detail").then((m) => ({
+    default: m.ProviderDetailPage,
+  })),
+);
 const HealthPage = lazy(() =>
   import("@/pages/health/health-page").then((m) => ({
     default: m.HealthPage,
@@ -159,6 +169,8 @@ const router = createBrowserRouter([
       { path: "ensembles/:ensembleId", element: <EnsembleDetailPage /> },
       { path: "ab-tests", element: <ABTestsListPage /> },
       { path: "ab-tests/:testId", element: <ABTestDetailPage /> },
+      { path: "providers", element: <ProvidersListPage /> },
+      { path: "providers/:providerId", element: <ProviderDetailPage /> },
       { path: "budgets", element: <BudgetsListPage /> },
       { path: "settings", element: <SettingsPage /> },
       { path: "health", element: <HealthPage /> },

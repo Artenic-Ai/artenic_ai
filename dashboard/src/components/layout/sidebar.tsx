@@ -1,7 +1,9 @@
 import { useEffect } from "react";
+import type { ComponentType } from "react";
 import {
   Activity,
   Box,
+  Cloud,
   Cpu,
   Database,
   GitBranch,
@@ -16,18 +18,63 @@ import { NavLink, useLocation } from "react-router";
 
 import { useSidebar } from "./sidebar-context";
 
-const NAV_ITEMS = [
-  { to: "/", icon: LayoutDashboard, label: "Overview" },
-  { to: "/models", icon: Box, label: "Models" },
-  { to: "/training", icon: Cpu, label: "Training" },
-  { to: "/datasets", icon: Database, label: "Datasets" },
-  { to: "/inference", icon: Zap, label: "Inference" },
-  { to: "/ensembles", icon: Layers, label: "Ensembles" },
-  { to: "/ab-tests", icon: GitBranch, label: "A/B Tests" },
-  { to: "/budgets", icon: Wallet, label: "Budgets" },
-  { to: "/health", icon: Activity, label: "Health" },
-  { to: "/settings", icon: Settings, label: "Settings" },
-] as const;
+interface NavItem {
+  to: string;
+  icon: ComponentType<{ size: number }>;
+  label: string;
+}
+
+interface NavSection {
+  title: string;
+  items: NavItem[];
+  accentClass: string;
+  titleClass: string;
+}
+
+const NAV_SECTIONS: NavSection[] = [
+  {
+    title: "General",
+    accentClass: "bg-blue-500/[0.05]",
+    titleClass: "text-blue-400/70",
+    items: [{ to: "/", icon: LayoutDashboard, label: "Overview" }],
+  },
+  {
+    title: "ML Pipeline",
+    accentClass: "bg-purple-500/[0.05]",
+    titleClass: "text-purple-400/70",
+    items: [
+      { to: "/models", icon: Box, label: "Models" },
+      { to: "/training", icon: Cpu, label: "Training" },
+      { to: "/datasets", icon: Database, label: "Datasets" },
+      { to: "/inference", icon: Zap, label: "Inference" },
+    ],
+  },
+  {
+    title: "Experimentation",
+    accentClass: "bg-cyan-500/[0.05]",
+    titleClass: "text-cyan-400/70",
+    items: [
+      { to: "/ensembles", icon: Layers, label: "Ensembles" },
+      { to: "/ab-tests", icon: GitBranch, label: "A/B Tests" },
+    ],
+  },
+  {
+    title: "Infrastructure",
+    accentClass: "bg-amber-500/[0.05]",
+    titleClass: "text-amber-400/70",
+    items: [
+      { to: "/providers", icon: Cloud, label: "Providers" },
+      { to: "/budgets", icon: Wallet, label: "Budgets" },
+      { to: "/health", icon: Activity, label: "Health" },
+    ],
+  },
+  {
+    title: "System",
+    accentClass: "bg-emerald-500/[0.05]",
+    titleClass: "text-emerald-400/70",
+    items: [{ to: "/settings", icon: Settings, label: "Settings" }],
+  },
+];
 
 function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   return (
@@ -39,24 +86,38 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
         </span>
       </div>
 
-      <nav className="flex-1 space-y-0.5 overflow-y-auto px-2 py-3">
-        {NAV_ITEMS.map((item) => (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            end={item.to === "/"}
-            onClick={onNavigate}
-            className={({ isActive }) =>
-              `flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors ${
-                isActive
-                  ? "bg-accent/10 text-accent font-medium"
-                  : "text-text-secondary hover:bg-surface-2 hover:text-text-primary"
-              }`
-            }
+      <nav className="flex-1 space-y-2 overflow-y-auto px-2 py-3">
+        {NAV_SECTIONS.map((section) => (
+          <div
+            key={section.title}
+            className={`rounded-lg p-1.5 ${section.accentClass}`}
           >
-            <item.icon size={18} />
-            {item.label}
-          </NavLink>
+            <p
+              className={`px-2 pt-1 pb-2 text-[10px] font-semibold uppercase tracking-widest ${section.titleClass}`}
+            >
+              {section.title}
+            </p>
+            <div className="space-y-0.5">
+              {section.items.map((item) => (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  end={item.to === "/"}
+                  onClick={onNavigate}
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 rounded-md px-3 py-2 text-[13px] transition-colors ${
+                      isActive
+                        ? "bg-accent/10 text-accent font-medium"
+                        : "text-text-secondary hover:bg-surface-2 hover:text-text-primary"
+                    }`
+                  }
+                >
+                  <item.icon size={18} />
+                  {item.label}
+                </NavLink>
+              ))}
+            </div>
+          </div>
         ))}
       </nav>
 

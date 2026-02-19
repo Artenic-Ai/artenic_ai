@@ -13,14 +13,16 @@ if TYPE_CHECKING:
 class TestPredict:
     def test_predict(self, runner: CliRunner, patch_run_async: Any) -> None:
         with patch_run_async(return_value={"prediction": 0.95}):
-            result = runner.invoke(cli, ["predict", "trading", "--data", '{"features": [1,2,3]}'])
+            result = runner.invoke(
+                cli, ["predict", "my-service", "--data", '{"features": [1,2,3]}']
+            )
             assert result.exit_code == 0
             assert "0.95" in result.output
 
     def test_predict_json(self, runner: CliRunner, patch_run_async: Any) -> None:
         with patch_run_async(return_value={"prediction": 0.95}):
             result = runner.invoke(
-                cli, ["--json", "predict", "trading", "--data", '{"features": [1]}']
+                cli, ["--json", "predict", "my-service", "--data", '{"features": [1]}']
             )
             assert result.exit_code == 0
             assert "0.95" in result.output

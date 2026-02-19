@@ -313,12 +313,3 @@ class TestConfigDiff:
         diff = ConfigDiff()
         with pytest.raises(ValidationError):
             diff.added = {"x": 1}  # type: ignore[misc]
-
-
-class TestNoTradingSchemas:
-    """Verify trading-specific schemas are NOT present."""
-
-    def test_no_trading_prediction(self) -> None:
-        import artenic_ai_sdk.schemas as mod
-
-        assert not hasattr(mod, "TradingPrediction")

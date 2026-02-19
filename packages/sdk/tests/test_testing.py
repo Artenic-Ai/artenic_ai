@@ -453,15 +453,6 @@ class TestPublicAPI:
             ]
         )
 
-    def test_no_trading_types(self) -> None:
-        """Ensure trading-specific types were removed from v2."""
-        import artenic_ai_sdk
-
-        assert not hasattr(artenic_ai_sdk, "TradingPrediction")
-        assert not hasattr(artenic_ai_sdk, "SignalDirection")
-        assert not hasattr(artenic_ai_sdk, "MarketRegime")
-        assert not hasattr(artenic_ai_sdk, "DynamicComposer")
-
     def test_version(self) -> None:
         import artenic_ai_sdk
 

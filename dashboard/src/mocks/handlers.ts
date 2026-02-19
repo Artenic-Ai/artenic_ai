@@ -20,6 +20,13 @@ import {
   MOCK_SETTINGS_SCHEMA,
   MOCK_SETTINGS_VALUES,
 } from "./settings";
+import {
+  MOCK_PROVIDER_COMPUTE,
+  MOCK_PROVIDER_DETAILS,
+  MOCK_PROVIDER_REGIONS,
+  MOCK_PROVIDER_STORAGE,
+  MOCK_PROVIDERS,
+} from "./providers";
 import { MOCK_TRAINING_JOBS } from "./training";
 
 function delay(ms: number): Promise<void> {
@@ -167,6 +174,36 @@ export async function handleDemoRequest<T>(
     );
     if (health) return health as T;
     throw new ApiError(404, `Health data for ${segments[1]} not found`);
+  }
+
+  // ── Providers ─────────────────────────────────────────────────────────────
+  if (segments[0] === "providers" && method === "GET") {
+    if (segments.length === 1) return MOCK_PROVIDERS as T;
+    const pid = segments[1] ?? "";
+    if (segments.length === 3) {
+      if (segments[2] === "storage") {
+        return (MOCK_PROVIDER_STORAGE[pid] ?? []) as T;
+      }
+      if (segments[2] === "compute") {
+        return (MOCK_PROVIDER_COMPUTE[pid] ?? []) as T;
+      }
+      if (segments[2] === "regions") {
+        return (MOCK_PROVIDER_REGIONS[pid] ?? []) as T;
+      }
+    }
+    const detail = MOCK_PROVIDER_DETAILS[pid];
+    if (detail) return detail as T;
+    throw new ApiError(404, `Provider ${pid} not found`);
+  }
+  if (segments[0] === "providers" && method === "POST") {
+    if (segments.length === 3 && segments[2] === "test") {
+      return {
+        success: true,
+        message: "Connected — 42 flavors available",
+        latency_ms: 85.3,
+      } as T;
+    }
+    return { success: true } as T;
   }
 
   // ── Activity ────────────────────────────────────────────────────────────────

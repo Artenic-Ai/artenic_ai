@@ -45,6 +45,7 @@ from artenic_ai_platform.middleware.logging import setup_logging
 from artenic_ai_platform.middleware.metrics import MetricsMiddleware
 from artenic_ai_platform.middleware.rate_limit import RateLimitMiddleware
 from artenic_ai_platform.providers.mock import MockProvider
+from artenic_ai_platform.providers_hub.router import router as providers_hub_router
 from artenic_ai_platform.registry.router import router as registry_router
 from artenic_ai_platform.routes.config import router as config_router
 from artenic_ai_platform.settings import PlatformSettings
@@ -230,6 +231,7 @@ def create_app(settings: PlatformSettings | None = None) -> FastAPI:
     app.include_router(ensemble_router)
     app.include_router(ab_testing_router)
     app.include_router(dataset_router)
+    app.include_router(providers_hub_router)
     app.include_router(ws_router)
 
     return app

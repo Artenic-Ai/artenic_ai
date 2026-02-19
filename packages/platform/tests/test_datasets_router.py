@@ -91,25 +91,32 @@ class TestStorageOptions:
         fs = next(o for o in data if o["id"] == "filesystem")
         assert fs["available"] is True
 
-    async def test_returns_configured_provider_as_available(self, tmp_path: Path) -> None:
-        """When AWS is configured, s3 shows as available."""
-        settings = PlatformSettings(
-            database_url="sqlite+aiosqlite://",
-            api_key="",
-            secret_key="test-secret",
-            otel_enabled=False,
-            dataset={"storage": {"local_dir": str(tmp_path / "ds")}},
-            aws={"enabled": True},
-        )
-        app = create_app(settings)
-        async with _lifespan(app):
-            transport = ASGITransport(app=app)
-            async with AsyncClient(transport=transport, base_url="http://test") as c:
-                resp = await c.get(f"{BASE}/storage-options")
-                assert resp.status_code == 200
-                data = resp.json()
-                s3 = next(o for o in data if o["id"] == "s3")
-                assert s3["available"] is True
+    async def test_returns_configured_provider_as_available(
+        self, app_with_lifespan: FastAPI
+    ) -> None:
+        """When a provider with storage capability is enabled, it shows as available."""
+
+        from artenic_ai_platform.db.models import ProviderRecord
+
+        # Insert an enabled OVH provider record into the DB
+        async with app_with_lifespan.state.session_factory() as session:
+            session.add(
+                ProviderRecord(
+                    id="ovh",
+                    display_name="OVH Public Cloud",
+                    enabled=True,
+                    status="connected",
+                )
+            )
+            await session.commit()
+
+        transport = ASGITransport(app=app_with_lifespan)
+        async with AsyncClient(transport=transport, base_url="http://test") as c:
+            resp = await c.get(f"{BASE}/storage-options")
+            assert resp.status_code == 200
+            data = resp.json()
+            ovh = next(o for o in data if o["id"] == "ovh")
+            assert ovh["available"] is True
 
 
 # ======================================================================

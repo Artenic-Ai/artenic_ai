@@ -227,7 +227,7 @@ class TestLifespan:
 
             async with app.state.engine.connect() as conn:
                 tables = await conn.run_sync(lambda sync_conn: inspect(sync_conn).get_table_names())
-            assert len(tables) == 21
+            assert len(tables) == 22
 
     async def test_lifespan_get_db_works(self) -> None:
         settings = PlatformSettings(

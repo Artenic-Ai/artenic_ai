@@ -3,12 +3,10 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING
+
+import pytest
 
 from artenic_ai_cli._config import load_config, save_config_value
-
-if TYPE_CHECKING:
-    import pytest
 
 
 class TestLoadConfig:
@@ -110,7 +108,8 @@ class TestLoadConfig:
 
         cfg_file = tmp_path / "config.toml"
         cfg_file.write_text("this is not valid toml {{{", encoding="utf-8")
-        cfg = load_config(config_path=cfg_file)
+        with pytest.warns(UserWarning, match="Failed to parse"):
+            cfg = load_config(config_path=cfg_file)
         assert cfg.url == "http://localhost:9000"
 
     def test_missing_profile_uses_defaults(

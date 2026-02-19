@@ -27,7 +27,7 @@ class PlatformClient:
 
         async with PlatformClient(base_url="http://localhost:9000") as client:
             models = await client.list_models()
-            result = await client.predict("trading", {"features": ...})
+            result = await client.predict("my-service", {"features": ...})
     """
 
     def __init__(
@@ -111,7 +111,7 @@ class PlatformClient:
         """Dispatch a training job to a remote provider.
 
         Args:
-            service: Target service (e.g. 'trading').
+            service: Target service (e.g. 'my-service').
             model: Model name within the service.
             provider: Training provider (e.g. 'ovh', 'gcp').
             config: Training configuration.
@@ -150,7 +150,7 @@ class PlatformClient:
         """Send an inference request to a service.
 
         Args:
-            service: Target service (e.g. 'trading').
+            service: Target service (e.g. 'my-service').
             data: Input data for the model.
 
         Returns:
@@ -170,7 +170,7 @@ class PlatformClient:
         """Send a batch inference request to a service.
 
         Args:
-            service: Target service (e.g. 'trading').
+            service: Target service (e.g. 'my-service').
             batch: List of input data dicts.
 
         Returns:

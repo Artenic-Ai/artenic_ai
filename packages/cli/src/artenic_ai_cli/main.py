@@ -106,6 +106,7 @@ def _register_commands() -> None:
     from artenic_ai_cli.commands.health import health_group
     from artenic_ai_cli.commands.inference import predict_batch_cmd, predict_cmd
     from artenic_ai_cli.commands.models import model_group
+    from artenic_ai_cli.commands.providers import provider_group
     from artenic_ai_cli.commands.settings import settings_group
     from artenic_ai_cli.commands.training import training_group
 
@@ -118,6 +119,7 @@ def _register_commands() -> None:
     cli.add_command(ab_test_group)
     cli.add_command(budget_group)
     cli.add_command(dataset_group)
+    cli.add_command(provider_group)
     cli.add_command(settings_group)
     cli.add_command(config_group)
 

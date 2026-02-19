@@ -114,30 +114,37 @@ Svc = Annotated[DatasetService, Depends(_get_service)]
 
 
 @router.get("/storage-options", response_model=list[StorageOptionResponse])
-async def storage_options(request: Request) -> list[dict[str, Any]]:
+async def storage_options(
+    session: Annotated[AsyncSession, Depends(_get_db)],
+) -> list[dict[str, Any]]:
     """List available storage backends based on configured providers."""
-    settings = request.app.state.settings
+    from sqlalchemy import select
+
+    from artenic_ai_platform.db.models import ProviderRecord
+    from artenic_ai_platform.providers_hub.catalog import PROVIDER_CATALOG
+
     options: list[dict[str, Any]] = [
         {"id": "filesystem", "label": "Self-hosted (local)", "available": True},
     ]
 
-    providers = [
-        ("s3", "AWS S3", "aws"),
-        ("gcs", "Google Cloud Storage", "gcp"),
-        ("azure", "Azure Blob Storage", "azure"),
-        ("ovh", "OVH Object Storage", "ovh"),
-    ]
-    configured_ids = set()
-    for pid, label, settings_attr in providers:
-        provider_cfg = getattr(settings, settings_attr, None)
-        if provider_cfg is not None and getattr(provider_cfg, "enabled", False):
-            options.append({"id": pid, "label": label, "available": True})
-            configured_ids.add(pid)
+    # Fetch all provider records from DB
+    result = await session.execute(select(ProviderRecord))
+    records = {r.id: r for r in result.scalars().all()}
 
-    # Show unconfigured providers as unavailable
-    for pid, label, _ in providers:
-        if pid not in configured_ids:
-            options.append({"id": pid, "label": label, "available": False})
+    # For each catalog provider with storage capability, check DB status
+    for defn in PROVIDER_CATALOG.values():
+        has_storage = any(c.type == "storage" for c in defn.capabilities)
+        if not has_storage:
+            continue
+        rec = records.get(defn.id)
+        available = rec is not None and rec.enabled
+        options.append(
+            {
+                "id": defn.id,
+                "label": f"{defn.display_name} Object Storage",
+                "available": available,
+            }
+        )
 
     return options
 

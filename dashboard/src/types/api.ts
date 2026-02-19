@@ -343,3 +343,99 @@ export interface CreateDatasetRequest {
   source?: string;
   tags?: Record<string, string>;
 }
+
+// ── Providers ────────────────────────────────────────────────────────────────
+
+export interface ProviderCapability {
+  type: string;
+  name: string;
+  description: string;
+}
+
+export interface CredentialField {
+  key: string;
+  label: string;
+  required: boolean;
+  secret: boolean;
+  placeholder: string;
+}
+
+export interface ConfigField {
+  key: string;
+  label: string;
+  default: string;
+  description: string;
+}
+
+export type ProviderStatus =
+  | "connected"
+  | "configured"
+  | "error"
+  | "unconfigured"
+  | "disabled";
+
+export interface ProviderSummary {
+  id: string;
+  display_name: string;
+  description: string;
+  enabled: boolean;
+  status: ProviderStatus;
+  capabilities: ProviderCapability[];
+}
+
+export interface ProviderDetail {
+  id: string;
+  display_name: string;
+  description: string;
+  website: string;
+  connector_type: string;
+  enabled: boolean;
+  status: ProviderStatus;
+  status_message: string;
+  has_credentials: boolean;
+  config: Record<string, string>;
+  capabilities: ProviderCapability[];
+  credential_fields: CredentialField[];
+  config_fields: ConfigField[];
+  last_checked_at: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+}
+
+export interface ConnectionTestResult {
+  success: boolean;
+  message: string;
+  latency_ms: number | null;
+}
+
+export interface ProviderStorageOption {
+  provider_id: string;
+  name: string;
+  type: string;
+  region: string;
+  bytes_used: number | null;
+  object_count: number | null;
+}
+
+export interface ProviderComputeInstance {
+  provider_id: string;
+  name: string;
+  vcpus: number;
+  memory_gb: number;
+  disk_gb: number | null;
+  gpu_type: string | null;
+  gpu_count: number;
+  region: string;
+  available: boolean;
+}
+
+export interface ProviderRegion {
+  provider_id: string;
+  id: string;
+  name: string;
+}
+
+export interface ConfigureProviderRequest {
+  credentials: Record<string, string>;
+  config: Record<string, string>;
+}

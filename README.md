@@ -64,11 +64,11 @@ artenic_ai/
 
 | Package | Description | Status | Tests | Coverage |
 |---------|-------------|--------|-------|----------|
-| `sdk` | BaseModel contract, schemas, ensemble, serialization, decorators | **Complete** | 614 | 100% |
+| `sdk` | BaseModel contract, schemas, ensemble, serialization, decorators | **Complete** | 610 | 100% |
 | `platform` | FastAPI gateway, registry, training, datasets, 16 providers | **Complete** | 1554 | 100% |
-| `cli` | Command-line interface — 11 command groups, 50+ subcommands | **Complete** | 198 | 100% |
+| `cli` | Command-line interface — 12 command groups, 60+ subcommands | **Complete** | 224 | 100% |
 | `optimizer` | LTR-based training instance selection | Stub | — | — |
-| `dashboard` | React admin UI — 10 pages, dark theme, demo mode | **Complete** | 68 | — |
+| `dashboard` | React admin UI — 11 pages, dark theme, demo mode | **Complete** | 68 | — |
 
 ### Dependency Graph
 
@@ -103,13 +103,14 @@ sdk (leaf — no internal deps)
 - **Health monitoring** — background drift detection, error rate tracking, latency percentiles
 - **Dataset management** — CRUD, file upload/download, versioning (SHA-256), auto-stats, tabular preview, lineage tracking
 - **Storage abstraction** — filesystem (default), cloud stubs (S3, GCS, Azure, OVH) — user selects backend per dataset
+- **Providers Hub** — 12 REST endpoints for cloud provider management (list, configure, enable/disable, test connection, storage/compute/regions capabilities)
 - **Event system** — async pub/sub EventBus + WebSocket real-time streaming
 - **Settings hot-reload** — encrypted secrets, audit log, runtime configuration
 - **Plugin system** — entry-point discovery for providers, strategies, services
 
 ### CLI (`packages/cli/`)
 
-- **11 command groups** covering all platform API endpoints (models, training, inference, ensembles, A/B tests, budgets, datasets, settings, health, config)
+- **12 command groups** covering all platform API endpoints (models, training, inference, ensembles, A/B tests, budgets, datasets, providers, settings, health, config)
 - **Rich terminal output** — tables and key-value dicts with `--json` machine-readable mode
 - **TOML multi-profile configuration** (`~/.artenic/config.toml`) with precedence: CLI flags > env vars > TOML > defaults
 - **Security hardening** — credential masking, TOML injection prevention, error message sanitization
@@ -117,9 +118,9 @@ sdk (leaf — no internal deps)
 
 ### Dashboard (`dashboard/`) — [ai.artenic.ch](https://ai.artenic.ch)
 
-- **10 pages** — Overview, Model Registry, Training Jobs, Datasets, Inference Playground, Ensembles, A/B Tests, Budgets, Settings, Health Monitoring
+- **11 pages** — Overview, Model Registry, Training Jobs, Datasets, Inference Playground, Ensembles, A/B Tests, Providers, Budgets, Settings, Health Monitoring
 - **Dark theme** — professional Grafana/Vercel-inspired palette with semantic color tokens
-- **Demo mode** — realistic mock data (8 models, 12 training jobs, 3 ensembles, 3 A/B tests, 4 budget rules) — no backend required
+- **Demo mode** — realistic mock data (8 models, 12 training jobs, 3 ensembles, 3 A/B tests, 4 budget rules, 16 providers) — no backend required
 - **15 UI components** — DataTable with sort/pagination, Dialog with a11y, Charts (area, bar, line), Toast notifications
 - **Stack** — React 19, Vite 7, Tailwind CSS 4, Recharts 3, TanStack React Query 5, TypeScript strict
 
@@ -191,6 +192,12 @@ artenic training dispatch --service my-svc --model my-model --provider local
 
 # Run predictions
 artenic predict my-service --data '{"feature": 1.5}'
+
+# Manage cloud providers
+artenic provider list
+artenic provider configure aws --credentials '{"access_key": "..."}'
+artenic provider test aws
+artenic provider enable aws
 
 # JSON output for scripting
 artenic --json training list | jq '.[] | .job_id'
@@ -273,6 +280,18 @@ The platform exposes the following API:
 | `GET` | `/api/v1/datasets/{id}/preview` | Preview tabular data |
 | `POST` | `/api/v1/datasets/{id}/lineage` | Add lineage link |
 | `GET` | `/api/v1/datasets/{id}/lineage` | Get lineage |
+| `GET` | `/api/v1/providers` | List all providers |
+| `GET` | `/api/v1/providers/capabilities/storage` | All storage options |
+| `GET` | `/api/v1/providers/capabilities/compute` | All compute instances |
+| `GET` | `/api/v1/providers/{id}` | Provider details |
+| `PUT` | `/api/v1/providers/{id}/configure` | Configure credentials |
+| `POST` | `/api/v1/providers/{id}/enable` | Enable provider |
+| `POST` | `/api/v1/providers/{id}/disable` | Disable provider |
+| `POST` | `/api/v1/providers/{id}/test` | Test connection |
+| `DELETE` | `/api/v1/providers/{id}` | Remove provider config |
+| `GET` | `/api/v1/providers/{id}/storage` | Provider storage options |
+| `GET` | `/api/v1/providers/{id}/compute` | Provider compute instances |
+| `GET` | `/api/v1/providers/{id}/regions` | Provider regions |
 | `WS` | `/ws` | Real-time event stream |
 
 ## Contributing

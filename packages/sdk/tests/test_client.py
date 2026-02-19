@@ -127,7 +127,7 @@ class TestPlatformClient:
         )
 
         job_id = await client.dispatch_training(
-            service="trading",
+            service="my-service",
             model="lgbm",
             provider="ovh",
             config=ModelConfig(),
@@ -149,7 +149,7 @@ class TestPlatformClient:
             )
         )
 
-        pred = await client.predict("trading", {"features": {"a": 1.0}})
+        pred = await client.predict("my-service", {"features": {"a": 1.0}})
         assert pred.confidence == 0.9
 
     @pytest.mark.asyncio
@@ -175,7 +175,7 @@ class TestPlatformClient:
             )
         )
 
-        results = await client.predict_batch("trading", [{"a": 1.0}, {"a": 2.0}])
+        results = await client.predict_batch("my-service", [{"a": 1.0}, {"a": 2.0}])
         assert len(results) == 2
         assert results[0].confidence == 0.9
         assert results[1].confidence == 0.8

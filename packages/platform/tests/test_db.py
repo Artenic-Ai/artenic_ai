@@ -55,6 +55,7 @@ EXPECTED_TABLES = sorted(
         "config_settings",
         "config_audit_log",
         "config_overrides",
+        "providers",
         "artenic_datasets",
         "artenic_dataset_versions",
         "artenic_dataset_files",
