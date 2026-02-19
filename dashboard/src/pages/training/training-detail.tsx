@@ -55,7 +55,14 @@ export function TrainingDetailPage() {
               {job.progress}%
             </span>
           </div>
-          <div className="h-2 overflow-hidden rounded-full bg-surface-3">
+          <div
+            className="h-2 overflow-hidden rounded-full bg-surface-3"
+            role="progressbar"
+            aria-valuenow={job.progress}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-label="Training progress"
+          >
             <div
               className="h-full rounded-full bg-accent transition-all"
               style={{ width: `${job.progress}%` }}

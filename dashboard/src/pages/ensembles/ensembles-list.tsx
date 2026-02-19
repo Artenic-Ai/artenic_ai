@@ -78,7 +78,11 @@ export function EnsemblesListPage() {
       </PageShell>
     );
   }
-  if (isError) return <ErrorState message="Failed to load ensembles." onRetry={() => void refetch()} />;
+  if (isError) return (
+    <PageShell title="Ensembles">
+      <ErrorState message="Failed to load ensembles." onRetry={() => void refetch()} />
+    </PageShell>
+  );
 
   return (
     <PageShell

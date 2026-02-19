@@ -30,7 +30,7 @@ export ARTENIC_SECRET_KEY=your-encryption-key
 uv run python -m artenic_ai_platform
 ```
 
-The server starts at `http://localhost:8000` with interactive docs at `/docs`.
+The server starts at `http://localhost:9000` with interactive docs at `/docs`.
 
 ## Architecture
 

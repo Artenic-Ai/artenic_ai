@@ -254,7 +254,14 @@ export function OverviewPage() {
                 <div className="flex items-center gap-4 text-sm">
                   {j.progress != null && (
                     <div className="flex items-center gap-2">
-                      <div className="h-1.5 w-24 overflow-hidden rounded-full bg-surface-3">
+                      <div
+                        className="h-1.5 w-24 overflow-hidden rounded-full bg-surface-3"
+                        role="progressbar"
+                        aria-valuenow={j.progress}
+                        aria-valuemin={0}
+                        aria-valuemax={100}
+                        aria-label={`${j.model} training progress`}
+                      >
                         <div
                           className="h-full rounded-full bg-accent transition-all"
                           style={{ width: `${j.progress}%` }}

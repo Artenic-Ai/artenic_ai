@@ -91,7 +91,11 @@ export function TrainingListPage() {
       </PageShell>
     );
   }
-  if (isError) return <ErrorState message="Failed to load training jobs." onRetry={() => void refetch()} />;
+  if (isError) return (
+    <PageShell title="Training Jobs">
+      <ErrorState message="Failed to load training jobs." onRetry={() => void refetch()} />
+    </PageShell>
+  );
 
   return (
     <PageShell
@@ -110,7 +114,7 @@ export function TrainingListPage() {
           data={data}
           keyFn={(r) => r.job_id}
           onRowClick={(r) => navigate(`/training/${r.job_id}`)}
-          pageSize={12}
+          pageSize={10}
         />
       ) : (
         <EmptyState

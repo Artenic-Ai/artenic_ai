@@ -33,7 +33,10 @@ def _load_toml(path: Path | None = None) -> dict[str, Any]:
         return {}
     try:
         return tomllib.loads(target.read_text(encoding="utf-8"))
-    except Exception:
+    except (tomllib.TOMLDecodeError, UnicodeDecodeError, PermissionError) as e:
+        import warnings
+
+        warnings.warn(f"Failed to parse {target}: {e}", stacklevel=2)
         return {}
 
 

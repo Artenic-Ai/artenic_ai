@@ -1,10 +1,52 @@
-import { lazy, Suspense } from "react";
+import { Component, lazy, Suspense } from "react";
+import type { ErrorInfo, ReactNode } from "react";
 import { Outlet, createBrowserRouter, RouterProvider } from "react-router";
 
 import { Header } from "@/components/layout/header";
 import { Sidebar } from "@/components/layout/sidebar";
 import { SidebarProvider } from "@/components/layout/sidebar-context";
 import { PageSpinner } from "@/components/ui/spinner";
+
+class ErrorBoundary extends Component<
+  { children: ReactNode },
+  { hasError: boolean }
+> {
+  constructor(props: { children: ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(): { hasError: boolean } {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: Error, info: ErrorInfo): void {
+    console.error("ErrorBoundary caught an error:", error, info);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="flex h-64 flex-col items-center justify-center text-center">
+          <h2 className="text-lg font-medium text-text-primary">
+            Something went wrong
+          </h2>
+          <p className="mt-1 text-sm text-text-muted">
+            An unexpected error occurred.
+          </p>
+          <button
+            type="button"
+            className="mt-4 rounded-md bg-accent px-4 py-2 text-sm font-medium text-white hover:bg-accent/90"
+            onClick={() => window.location.reload()}
+          >
+            Reload
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 const OverviewPage = lazy(() =>
   import("@/pages/overview").then((m) => ({ default: m.OverviewPage })),
@@ -78,9 +120,11 @@ function Layout() {
         <div className="flex flex-1 flex-col overflow-hidden">
           <Header />
           <main className="flex-1 overflow-y-auto bg-surface-0 p-4 md:p-6">
-            <Suspense fallback={<PageSpinner />}>
-              <Outlet />
-            </Suspense>
+            <ErrorBoundary>
+              <Suspense fallback={<PageSpinner />}>
+                <Outlet />
+              </Suspense>
+            </ErrorBoundary>
           </main>
         </div>
       </div>

@@ -10,7 +10,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/python-3.12%2B-blue" alt="Python">
   <img src="https://img.shields.io/badge/license-Apache%202.0-green" alt="License">
-  <img src="https://img.shields.io/badge/tests-2227%20passed-brightgreen" alt="Tests">
+  <a href="https://github.com/Artenic-Ai/artenic_ai/actions/workflows/ci.yml"><img src="https://github.com/Artenic-Ai/artenic_ai/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <img src="https://img.shields.io/badge/coverage-100%25-brightgreen" alt="Coverage">
 </p>
 
@@ -68,7 +68,7 @@ artenic_ai/
 | `platform` | FastAPI gateway, registry, training orchestrator, 15 providers | **Complete** | 1362 | 100% |
 | `cli` | Command-line interface — 10 command groups, 40+ subcommands | **Complete** | 159 | 100% |
 | `optimizer` | LTR-based training instance selection | Stub | — | — |
-| `dashboard` | React admin UI — 9 pages, dark theme, demo mode | **Complete** | 51 | — |
+| `dashboard` | React admin UI — 9 pages, dark theme, demo mode | **Complete** | 68 | — |
 
 ### Dependency Graph
 
@@ -265,4 +265,4 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 Apache License 2.0 — see [LICENSE](LICENSE) for details.
 
-Copyright 2026 - Artenic_
+Copyright 2026 Artenic Cloud

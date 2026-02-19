@@ -38,13 +38,15 @@ export function BudgetsListPage() {
   }
   if (budgets.isError || spending.isError) {
     return (
-      <ErrorState
-        message="Failed to load budget data."
-        onRetry={() => {
-          void budgets.refetch();
-          void spending.refetch();
-        }}
-      />
+      <PageShell title="Budgets">
+        <ErrorState
+          message="Failed to load budget data."
+          onRetry={() => {
+            void budgets.refetch();
+            void spending.refetch();
+          }}
+        />
+      </PageShell>
     );
   }
 
@@ -90,7 +92,14 @@ export function BudgetsListPage() {
                 <div className="mt-1 text-xs text-text-muted">
                   of {formatEUR(s.limit_eur)}
                 </div>
-                <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-surface-3">
+                <div
+                  className="mt-2 h-1.5 overflow-hidden rounded-full bg-surface-3"
+                  role="progressbar"
+                  aria-valuenow={Math.min(s.pct_used, 100)}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-label={`${s.scope === "global" ? "Global" : s.scope_value} budget usage`}
+                >
                   <div
                     className={`h-full rounded-full transition-all ${
                       s.pct_used >= 90

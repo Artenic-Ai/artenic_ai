@@ -71,7 +71,11 @@ export function ModelsListPage() {
       </PageShell>
     );
   }
-  if (isError) return <ErrorState message="Failed to load models." onRetry={() => void refetch()} />;
+  if (isError) return (
+    <PageShell title="Models">
+      <ErrorState message="Failed to load models." onRetry={() => void refetch()} />
+    </PageShell>
+  );
 
   return (
     <PageShell

@@ -99,7 +99,8 @@ def retry(*, max_attempts: int = 3, backoff_base: float = 1.0) -> Callable[[F], 
                     if attempt < max_attempts - 1:
                         delay = backoff_base * (2**attempt)
                         await asyncio.sleep(delay)
-            raise last_error  # type: ignore[misc]
+            assert last_error is not None  # max_attempts >= 1, loop always runs
+            raise last_error
 
         return wrapper
 

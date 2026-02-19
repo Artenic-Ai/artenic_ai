@@ -67,9 +67,16 @@ class FSDPManager:
         import torch
         import torch.distributed as dist
 
-        rank = int(os.environ.get("RANK", "0"))
-        world_size = int(os.environ.get("WORLD_SIZE", "1"))
-        local_rank = int(os.environ.get("LOCAL_RANK", "0"))
+        try:
+            rank = int(os.environ.get("RANK", "0"))
+            world_size = int(os.environ.get("WORLD_SIZE", "1"))
+            local_rank = int(os.environ.get("LOCAL_RANK", "0"))
+        except ValueError as e:
+            msg = f"Invalid distributed environment variable: {e}"
+            raise RuntimeError(msg) from e
+        if rank < 0 or rank >= world_size:
+            msg = f"RANK={rank} must be in [0, {world_size})"
+            raise RuntimeError(msg)
 
         backend = "nccl" if torch.cuda.is_available() else "gloo"
 

@@ -4,6 +4,10 @@ Each saved model produces a directory with:
     model.safetensors (or model.onnx / model.pt / model.pts / model.pkl / model.joblib)
     metadata.json
     config.json (if config provided)
+
+Security Warning:
+    Pickle and torch.load can execute arbitrary code during deserialization.
+    Only load models from trusted sources. Prefer safetensors format when possible.
 """
 
 from __future__ import annotations
@@ -285,7 +289,7 @@ def _load_torchscript(path: Path) -> dict[str, Any]:
     try:
         model = torch.jit.load(str(path))
         return {"_module": model, "format": "torchscript"}
-    except Exception:
+    except RuntimeError:
         return torch.load(path, weights_only=True)  # type: ignore[no-any-return]
 
 

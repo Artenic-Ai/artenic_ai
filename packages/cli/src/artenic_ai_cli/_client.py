@@ -67,7 +67,7 @@ class ApiClient:
     async def _request(self, method: str, path: str, **kwargs: Any) -> Any:
         """Send request and map HTTP errors to SDK exceptions."""
         if not self._client:
-            raise PlatformError("Client not initialised. Use 'async with' context.")
+            raise PlatformError("Client not initialized. Use 'async with' context.")
 
         try:
             response = await self._client.request(method, path, **kwargs)

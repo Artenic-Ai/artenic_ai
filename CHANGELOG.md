@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+*(nothing yet)*
+
 ## [0.4.0] — 2026-02-18
 
 ### Step 5 — Dashboard (`dashboard/`) — [ai.artenic.ch](https://ai.artenic.ch)

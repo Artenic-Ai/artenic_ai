@@ -2,13 +2,12 @@
 
 ## Supported Versions
 
+Only the **latest minor version** receives security patches.
+
 | Version | Supported          |
 |---------|--------------------|
-| 0.4.x   | Yes                |
-| 0.3.x   | Yes                |
-| 0.2.x   | Yes                |
-| 0.1.x   | Yes                |
-| < 0.1   | No                 |
+| 0.5.x   | Yes                |
+| < 0.5   | No                 |
 
 ## Reporting a Vulnerability
 

@@ -77,7 +77,11 @@ export function ABTestsListPage() {
       </PageShell>
     );
   }
-  if (isError) return <ErrorState message="Failed to load A/B tests." onRetry={() => void refetch()} />;
+  if (isError) return (
+    <PageShell title="A/B Tests">
+      <ErrorState message="Failed to load A/B tests." onRetry={() => void refetch()} />
+    </PageShell>
+  );
 
   return (
     <PageShell

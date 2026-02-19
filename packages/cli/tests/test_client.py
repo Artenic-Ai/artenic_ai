@@ -164,12 +164,12 @@ class TestApiClient:
         with pytest.raises(ServiceUnavailableError, match="timed out"):
             run_async(_test())
 
-    def test_not_initialised(self) -> None:
+    def test_not_initialized(self) -> None:
         async def _test() -> None:
             api = ApiClient("http://test:9000")
             await api.get("/x")
 
-        with pytest.raises(PlatformError, match="not initialised"):
+        with pytest.raises(PlatformError, match="not initialized"):
             run_async(_test())
 
     def test_aexit_no_client(self) -> None:

@@ -32,6 +32,10 @@ COPY --from=builder /app/dist /usr/share/nginx/html
 # Copy nginx configuration
 COPY dashboard/nginx.conf /etc/nginx/conf.d/default.conf
 
+# Run as non-root user
+RUN chown -R nginx:nginx /usr/share/nginx/html
+USER nginx
+
 EXPOSE 80
 
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \

@@ -19,7 +19,7 @@ export function Tooltip({ content, children, position = "top" }: TooltipProps) {
       {children}
       <span
         role="tooltip"
-        className={`pointer-events-none absolute z-50 whitespace-nowrap rounded-md border border-border bg-surface-2 px-2.5 py-1 text-xs text-text-primary opacity-0 shadow-lg transition-opacity group-hover:opacity-100 ${POSITION_CLASSES[position]}`}
+        className={`pointer-events-none absolute z-50 whitespace-nowrap rounded-md border border-border bg-surface-2 px-2.5 py-1 text-xs text-text-primary opacity-0 shadow-lg transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 ${POSITION_CLASSES[position]}`}
       >
         {content}
       </span>
