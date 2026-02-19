@@ -15,7 +15,7 @@ import { PageShell } from "@/components/layout/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Card, StatCard } from "@/components/ui/card";
 import { ErrorState } from "@/components/ui/error-state";
-import { PageSpinner } from "@/components/ui/spinner";
+import { CardSkeleton, StatCardSkeleton } from "@/components/ui/skeleton";
 import { StatusDot } from "@/components/ui/status-dot";
 import { useActivity } from "@/hooks/use-activity";
 import { useModelHealth } from "@/hooks/use-health";
@@ -58,7 +58,23 @@ export function OverviewPage() {
     [spending.data],
   );
 
-  if (isLoading) return <PageSpinner />;
+  if (isLoading) {
+    return (
+      <PageShell title="Overview" description="Platform status and recent activity.">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <StatCardSkeleton />
+          <StatCardSkeleton />
+          <StatCardSkeleton />
+          <StatCardSkeleton />
+        </div>
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+          <CardSkeleton className="lg:col-span-2" />
+          <CardSkeleton />
+        </div>
+        <CardSkeleton />
+      </PageShell>
+    );
+  }
   if (isError) {
     return (
       <ErrorState
@@ -134,6 +150,7 @@ export function OverviewPage() {
               stacked
               height={280}
               formatY={(v) => `\u20AC${v}`}
+              yLabel="EUR"
             />
           ) : (
             <div className="flex h-[280px] items-center justify-center text-text-muted">

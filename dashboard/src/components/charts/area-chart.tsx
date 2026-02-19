@@ -15,6 +15,8 @@ interface AreaChartProps {
   color?: string;
   height?: number;
   formatY?: (value: number) => string;
+  xLabel?: string;
+  yLabel?: string;
 }
 
 export function AreaChart({
@@ -24,6 +26,8 @@ export function AreaChart({
   color = "var(--color-chart-1)",
   height = 200,
   formatY,
+  xLabel,
+  yLabel,
 }: AreaChartProps) {
   return (
     <ResponsiveContainer width="100%" height={height}>
@@ -40,12 +44,14 @@ export function AreaChart({
           stroke="var(--color-text-muted)"
           fontSize={12}
           tickLine={false}
+          label={xLabel ? { value: xLabel, position: "insideBottom", offset: -5, fill: "var(--color-text-muted)", fontSize: 11 } : undefined}
         />
         <YAxis
           stroke="var(--color-text-muted)"
           fontSize={12}
           tickLine={false}
           tickFormatter={formatY}
+          label={yLabel ? { value: yLabel, angle: -90, position: "insideLeft", fill: "var(--color-text-muted)", fontSize: 11 } : undefined}
         />
         <Tooltip
           contentStyle={{

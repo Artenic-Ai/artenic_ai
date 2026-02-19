@@ -36,7 +36,7 @@ export function Dialog({ open, onClose, title, children }: DialogProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div
-        className="absolute inset-0 bg-black/60"
+        className="absolute inset-0 bg-black/60 animate-overlay-fade"
         onClick={onClose}
         aria-hidden="true"
       />
@@ -46,7 +46,7 @@ export function Dialog({ open, onClose, title, children }: DialogProps) {
         aria-modal="true"
         aria-labelledby={titleId}
         tabIndex={-1}
-        className="relative w-full max-w-lg rounded-lg border border-border bg-surface-1 shadow-xl outline-none"
+        className="relative w-full max-w-lg rounded-lg border border-border bg-surface-1 shadow-xl outline-none animate-slide-up-fade"
       >
         <div className="flex items-center justify-between border-b border-border px-5 py-4">
           <h3

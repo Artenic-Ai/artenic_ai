@@ -6,7 +6,7 @@ import { PageShell } from "@/components/layout/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Card, StatCard } from "@/components/ui/card";
 import { ErrorState } from "@/components/ui/error-state";
-import { PageSpinner } from "@/components/ui/spinner";
+import { CardSkeleton, StatCardSkeleton } from "@/components/ui/skeleton";
 import { StatusDot } from "@/components/ui/status-dot";
 import { useHealthDetailed, useModelHealth } from "@/hooks/use-health";
 import { useModels } from "@/hooks/use-models";
@@ -31,7 +31,22 @@ export function HealthPage() {
     return { healthyCount: healthy, degradedCount: degraded, unhealthyCount: unhealthy };
   }, [healthData]);
 
-  if (system.isLoading || modelHealth.isLoading) return <PageSpinner />;
+  if (system.isLoading || modelHealth.isLoading) {
+    return (
+      <PageShell title="Health Monitoring" description="System health and model performance metrics.">
+        <CardSkeleton />
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <StatCardSkeleton />
+          <StatCardSkeleton />
+          <StatCardSkeleton />
+        </div>
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+          <CardSkeleton />
+          <CardSkeleton />
+        </div>
+      </PageShell>
+    );
+  }
   if (system.isError || modelHealth.isError) {
     return (
       <ErrorState

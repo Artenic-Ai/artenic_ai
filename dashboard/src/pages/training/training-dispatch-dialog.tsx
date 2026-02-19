@@ -17,9 +17,22 @@ export function TrainingDispatchDialog({
   const [model, setModel] = useState("");
   const [provider, setProvider] = useState("gcp");
   const [instanceType, setInstanceType] = useState("");
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    const newErrors: Record<string, string> = {};
+    if (!service.trim()) {
+      newErrors.service = "Service is required";
+    }
+    if (!model.trim()) {
+      newErrors.model = "Model is required";
+    }
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+    setErrors({});
     onClose();
     setService("");
     setModel("");
@@ -36,6 +49,7 @@ export function TrainingDispatchDialog({
           onChange={(e) => setService(e.target.value)}
           placeholder="sentiment"
           required
+          error={errors.service}
         />
         <Input
           label="Model"
@@ -43,6 +57,7 @@ export function TrainingDispatchDialog({
           onChange={(e) => setModel(e.target.value)}
           placeholder="sentiment-bert-v3"
           required
+          error={errors.model}
         />
         <Select
           label="Provider"

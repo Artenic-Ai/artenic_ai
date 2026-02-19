@@ -17,9 +17,19 @@ export function BudgetCreateDialog({
   const [scopeValue, setScopeValue] = useState("*");
   const [period, setPeriod] = useState("monthly");
   const [limit, setLimit] = useState("");
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    const newErrors: Record<string, string> = {};
+    if (Number(limit) <= 0) {
+      newErrors.limit = "Limit must be greater than 0";
+    }
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+    setErrors({});
     onClose();
     setScope("global");
     setScopeValue("*");
@@ -65,6 +75,7 @@ export function BudgetCreateDialog({
           onChange={(e) => setLimit(e.target.value)}
           placeholder="5000"
           required
+          error={errors.limit}
         />
         <div className="flex justify-end gap-2 pt-2">
           <Button variant="ghost" type="button" onClick={onClose}>

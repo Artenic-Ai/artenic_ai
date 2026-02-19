@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { type Column, DataTable } from "@/components/ui/data-table";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ErrorState } from "@/components/ui/error-state";
-import { PageSpinner } from "@/components/ui/spinner";
+import { TableSkeleton } from "@/components/ui/skeleton";
 import { useEnsembles } from "@/hooks/use-ensembles";
 import { formatDate } from "@/lib/format";
 import type { Ensemble } from "@/types/api";
@@ -71,7 +71,13 @@ export function EnsemblesListPage() {
   const navigate = useNavigate();
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  if (isLoading) return <PageSpinner />;
+  if (isLoading) {
+    return (
+      <PageShell title="Ensembles" description="Model ensembles and their configurations.">
+        <TableSkeleton rows={6} cols={6} />
+      </PageShell>
+    );
+  }
   if (isError) return <ErrorState message="Failed to load ensembles." onRetry={() => void refetch()} />;
 
   return (

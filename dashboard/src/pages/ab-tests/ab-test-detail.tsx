@@ -1,14 +1,13 @@
-import { useParams, Link } from "react-router";
-
-import { ArrowLeft } from "lucide-react";
+import { useParams } from "react-router";
 
 import { BarChart } from "@/components/charts/bar-chart";
 import { PageShell } from "@/components/layout/page-shell";
 import { Badge } from "@/components/ui/badge";
+import { Breadcrumb } from "@/components/ui/breadcrumb";
 import { Card } from "@/components/ui/card";
 import { DetailRow } from "@/components/ui/detail-row";
 import { ErrorState } from "@/components/ui/error-state";
-import { PageSpinner } from "@/components/ui/spinner";
+import { DetailSkeleton } from "@/components/ui/skeleton";
 import { useABTest, useABTestResults } from "@/hooks/use-ab-tests";
 import { formatDateTime, formatMs } from "@/lib/format";
 
@@ -17,7 +16,13 @@ export function ABTestDetailPage() {
   const { data: test, isLoading, isError, refetch } = useABTest(testId ?? "");
   const { data: results } = useABTestResults(testId ?? "");
 
-  if (isLoading) return <PageSpinner />;
+  if (isLoading) {
+    return (
+      <PageShell title="">
+        <DetailSkeleton />
+      </PageShell>
+    );
+  }
   if (isError) {
     return <ErrorState message="Failed to load A/B test." onRetry={() => void refetch()} />;
   }
@@ -42,14 +47,13 @@ export function ABTestDetailPage() {
     <PageShell
       title={test.name}
       description={`${test.service} \u2014 ${test.primary_metric}`}
-      actions={
-        <Link
-          to="/ab-tests"
-          className="inline-flex items-center gap-1 text-sm text-text-secondary hover:text-text-primary"
-        >
-          <ArrowLeft size={16} />
-          Back to A/B tests
-        </Link>
+      breadcrumb={
+        <Breadcrumb
+          items={[
+            { label: "A/B Tests", to: "/ab-tests" },
+            { label: test.name },
+          ]}
+        />
       }
     >
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
@@ -166,6 +170,7 @@ export function ABTestDetailPage() {
                     },
                   ]}
                   height={250}
+                  yLabel="Value"
                 />
               </Card>
             )}

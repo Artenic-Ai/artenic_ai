@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { type Column, DataTable } from "@/components/ui/data-table";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ErrorState } from "@/components/ui/error-state";
-import { PageSpinner } from "@/components/ui/spinner";
+import { TableSkeleton } from "@/components/ui/skeleton";
 import { useModels } from "@/hooks/use-models";
 import { formatDate } from "@/lib/format";
 import type { Model } from "@/types/api";
@@ -64,7 +64,13 @@ export function ModelsListPage() {
   const navigate = useNavigate();
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  if (isLoading) return <PageSpinner />;
+  if (isLoading) {
+    return (
+      <PageShell title="Model Registry" description="All registered models and their stages.">
+        <TableSkeleton rows={8} cols={5} />
+      </PageShell>
+    );
+  }
   if (isError) return <ErrorState message="Failed to load models." onRetry={() => void refetch()} />;
 
   return (

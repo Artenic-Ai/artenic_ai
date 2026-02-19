@@ -3,6 +3,7 @@ import { Outlet, createBrowserRouter, RouterProvider } from "react-router";
 
 import { Header } from "@/components/layout/header";
 import { Sidebar } from "@/components/layout/sidebar";
+import { SidebarProvider } from "@/components/layout/sidebar-context";
 import { PageSpinner } from "@/components/ui/spinner";
 
 const OverviewPage = lazy(() =>
@@ -71,17 +72,19 @@ const HealthPage = lazy(() =>
 
 function Layout() {
   return (
-    <div className="flex h-screen overflow-hidden">
-      <Sidebar />
-      <div className="flex flex-1 flex-col overflow-hidden">
-        <Header />
-        <main className="flex-1 overflow-y-auto bg-surface-0 p-6">
-          <Suspense fallback={<PageSpinner />}>
-            <Outlet />
-          </Suspense>
-        </main>
+    <SidebarProvider>
+      <div className="flex h-screen overflow-hidden">
+        <Sidebar />
+        <div className="flex flex-1 flex-col overflow-hidden">
+          <Header />
+          <main className="flex-1 overflow-y-auto bg-surface-0 p-4 md:p-6">
+            <Suspense fallback={<PageSpinner />}>
+              <Outlet />
+            </Suspense>
+          </main>
+        </div>
       </div>
-    </div>
+    </SidebarProvider>
   );
 }
 

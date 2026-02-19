@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ErrorState } from "@/components/ui/error-state";
-import { PageSpinner } from "@/components/ui/spinner";
+import { CardSkeleton, StatCardSkeleton } from "@/components/ui/skeleton";
 import { useBudgets, useSpending, useSpendingHistory } from "@/hooks/use-budgets";
 import { SPENDING_SERIES } from "@/lib/constants";
 import { formatEUR } from "@/lib/format";
@@ -22,7 +22,20 @@ export function BudgetsListPage() {
   const history = useSpendingHistory();
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  if (budgets.isLoading || spending.isLoading) return <PageSpinner />;
+  if (budgets.isLoading || spending.isLoading) {
+    return (
+      <PageShell title="Budgets" description="Budget rules and spending overview.">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <StatCardSkeleton />
+          <StatCardSkeleton />
+          <StatCardSkeleton />
+          <StatCardSkeleton />
+        </div>
+        <CardSkeleton />
+        <CardSkeleton />
+      </PageShell>
+    );
+  }
   if (budgets.isError || spending.isError) {
     return (
       <ErrorState
@@ -108,6 +121,7 @@ export function BudgetsListPage() {
             stacked
             height={300}
             formatY={(v) => `€${v}`}
+            yLabel="EUR"
           />
         </Card>
       )}

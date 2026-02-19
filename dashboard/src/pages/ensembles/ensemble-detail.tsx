@@ -1,13 +1,12 @@
-import { useParams, Link } from "react-router";
-
-import { ArrowLeft } from "lucide-react";
+import { useParams } from "react-router";
 
 import { PageShell } from "@/components/layout/page-shell";
 import { Badge } from "@/components/ui/badge";
+import { Breadcrumb } from "@/components/ui/breadcrumb";
 import { Card } from "@/components/ui/card";
 import { DetailRow } from "@/components/ui/detail-row";
 import { ErrorState } from "@/components/ui/error-state";
-import { PageSpinner } from "@/components/ui/spinner";
+import { DetailSkeleton } from "@/components/ui/skeleton";
 import { useEnsemble, useEnsembleVersions } from "@/hooks/use-ensembles";
 import { formatDateTime } from "@/lib/format";
 
@@ -16,7 +15,13 @@ export function EnsembleDetailPage() {
   const { data: ensemble, isLoading, isError, refetch } = useEnsemble(ensembleId ?? "");
   const { data: versions } = useEnsembleVersions(ensembleId ?? "");
 
-  if (isLoading) return <PageSpinner />;
+  if (isLoading) {
+    return (
+      <PageShell title="">
+        <DetailSkeleton />
+      </PageShell>
+    );
+  }
   if (isError) {
     return <ErrorState message="Failed to load ensemble." onRetry={() => void refetch()} />;
   }
@@ -32,14 +37,13 @@ export function EnsembleDetailPage() {
     <PageShell
       title={ensemble.name}
       description={`${ensemble.service} \u2014 ${ensemble.strategy.replace(/_/g, " ")}`}
-      actions={
-        <Link
-          to="/ensembles"
-          className="inline-flex items-center gap-1 text-sm text-text-secondary hover:text-text-primary"
-        >
-          <ArrowLeft size={16} />
-          Back to ensembles
-        </Link>
+      breadcrumb={
+        <Breadcrumb
+          items={[
+            { label: "Ensembles", to: "/ensembles" },
+            { label: ensemble.name },
+          ]}
+        />
       }
     >
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">

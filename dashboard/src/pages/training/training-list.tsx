@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { type Column, DataTable } from "@/components/ui/data-table";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ErrorState } from "@/components/ui/error-state";
-import { PageSpinner } from "@/components/ui/spinner";
+import { TableSkeleton } from "@/components/ui/skeleton";
 import { useTrainingJobs } from "@/hooks/use-training";
 import { formatDateTime, formatEUR } from "@/lib/format";
 import type { TrainingJob } from "@/types/api";
@@ -84,7 +84,13 @@ export function TrainingListPage() {
   const navigate = useNavigate();
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  if (isLoading) return <PageSpinner />;
+  if (isLoading) {
+    return (
+      <PageShell title="Training Jobs" description="Manage and monitor training runs.">
+        <TableSkeleton rows={8} cols={5} />
+      </PageShell>
+    );
+  }
   if (isError) return <ErrorState message="Failed to load training jobs." onRetry={() => void refetch()} />;
 
   return (

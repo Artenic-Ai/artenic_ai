@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { type Column, DataTable } from "@/components/ui/data-table";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ErrorState } from "@/components/ui/error-state";
-import { PageSpinner } from "@/components/ui/spinner";
+import { TableSkeleton } from "@/components/ui/skeleton";
 import { useABTests } from "@/hooks/use-ab-tests";
 import { formatDate } from "@/lib/format";
 import type { ABTest } from "@/types/api";
@@ -70,7 +70,13 @@ export function ABTestsListPage() {
   const navigate = useNavigate();
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  if (isLoading) return <PageSpinner />;
+  if (isLoading) {
+    return (
+      <PageShell title="A/B Tests" description="Manage model comparison experiments.">
+        <TableSkeleton rows={6} cols={6} />
+      </PageShell>
+    );
+  }
   if (isError) return <ErrorState message="Failed to load A/B tests." onRetry={() => void refetch()} />;
 
   return (

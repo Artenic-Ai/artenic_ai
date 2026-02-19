@@ -69,7 +69,7 @@ export function DataTable<T>({
   return (
     <div>
       <div className="overflow-x-auto">
-        <table className="w-full text-left text-sm">
+        <table className="min-w-[600px] w-full text-left text-sm">
           <thead>
             <tr className="border-b border-border">
               {columns.map((col) => (
@@ -110,7 +110,7 @@ export function DataTable<T>({
       </div>
 
       {totalPages > 1 && (
-        <div className="flex items-center justify-between border-t border-border px-4 py-3 text-xs text-text-muted">
+        <div className="flex flex-col items-center justify-between gap-2 border-t border-border px-4 py-3 text-xs text-text-muted sm:flex-row">
           <span>
             {page * pageSize + 1}–{Math.min((page + 1) * pageSize, sorted.length)}{" "}
             of {sorted.length}

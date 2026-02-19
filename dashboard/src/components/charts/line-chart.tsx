@@ -21,6 +21,8 @@ interface LineChartProps {
   series: LineChartSeries[];
   height?: number;
   formatY?: (value: number) => string;
+  xLabel?: string;
+  yLabel?: string;
 }
 
 export function LineChart({
@@ -29,6 +31,8 @@ export function LineChart({
   series,
   height = 250,
   formatY,
+  xLabel,
+  yLabel,
 }: LineChartProps) {
   return (
     <ResponsiveContainer width="100%" height={height}>
@@ -39,12 +43,14 @@ export function LineChart({
           stroke="var(--color-text-muted)"
           fontSize={12}
           tickLine={false}
+          label={xLabel ? { value: xLabel, position: "insideBottom", offset: -5, fill: "var(--color-text-muted)", fontSize: 11 } : undefined}
         />
         <YAxis
           stroke="var(--color-text-muted)"
           fontSize={12}
           tickLine={false}
           tickFormatter={formatY}
+          label={yLabel ? { value: yLabel, angle: -90, position: "insideLeft", fill: "var(--color-text-muted)", fontSize: 11 } : undefined}
         />
         <Tooltip
           contentStyle={{

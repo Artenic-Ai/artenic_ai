@@ -1,14 +1,13 @@
-import { useParams, Link } from "react-router";
-
-import { ArrowLeft } from "lucide-react";
+import { useParams } from "react-router";
 
 import { LineChart } from "@/components/charts/line-chart";
 import { PageShell } from "@/components/layout/page-shell";
 import { Badge } from "@/components/ui/badge";
+import { Breadcrumb } from "@/components/ui/breadcrumb";
 import { Card } from "@/components/ui/card";
 import { DetailRow } from "@/components/ui/detail-row";
 import { ErrorState } from "@/components/ui/error-state";
-import { PageSpinner } from "@/components/ui/spinner";
+import { DetailSkeleton } from "@/components/ui/skeleton";
 import { useTrainingJob } from "@/hooks/use-training";
 import { formatDateTime, formatEUR } from "@/lib/format";
 
@@ -16,7 +15,13 @@ export function TrainingDetailPage() {
   const { jobId } = useParams();
   const { data: job, isLoading, isError, refetch } = useTrainingJob(jobId ?? "");
 
-  if (isLoading) return <PageSpinner />;
+  if (isLoading) {
+    return (
+      <PageShell title="">
+        <DetailSkeleton />
+      </PageShell>
+    );
+  }
   if (isError) {
     return <ErrorState message="Failed to load training job." onRetry={() => void refetch()} />;
   }
@@ -32,14 +37,13 @@ export function TrainingDetailPage() {
     <PageShell
       title={job.model}
       description={`Job ${job.job_id} \u2014 ${job.service}`}
-      actions={
-        <Link
-          to="/training"
-          className="inline-flex items-center gap-1 text-sm text-text-secondary hover:text-text-primary"
-        >
-          <ArrowLeft size={16} />
-          Back to training
-        </Link>
+      breadcrumb={
+        <Breadcrumb
+          items={[
+            { label: "Training", to: "/training" },
+            { label: job.model },
+          ]}
+        />
       }
     >
       {/* Progress bar for running jobs */}
@@ -135,6 +139,8 @@ export function TrainingDetailPage() {
                 },
               ]}
               height={300}
+              xLabel="Epoch"
+              yLabel="Loss"
             />
           </Card>
         )}

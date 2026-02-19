@@ -56,7 +56,7 @@ export function ToastContainer() {
           <div
             key={t.id}
             role="alert"
-            className={`flex items-center gap-2 rounded-lg border px-4 py-3 shadow-lg ${VARIANT_STYLES[t.variant]}`}
+            className={`flex items-center gap-2 rounded-lg border px-4 py-3 shadow-lg animate-slide-in-right ${VARIANT_STYLES[t.variant]}`}
           >
             <Icon size={16} />
             <span className="text-sm font-medium">{t.message}</span>

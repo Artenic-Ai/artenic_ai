@@ -17,9 +17,22 @@ export function ModelRegisterDialog({
   const [version, setVersion] = useState("");
   const [modelType, setModelType] = useState("");
   const [framework, setFramework] = useState("pytorch");
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    const newErrors: Record<string, string> = {};
+    if (!name.trim()) {
+      newErrors.name = "Name is required";
+    }
+    if (!/^\d+\.\d+\.\d+$/.test(version)) {
+      newErrors.version = "Version must be in semver format (e.g. 1.0.0)";
+    }
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+    setErrors({});
     // Demo mode: just close
     onClose();
     setName("");
@@ -37,6 +50,7 @@ export function ModelRegisterDialog({
           onChange={(e) => setName(e.target.value)}
           placeholder="my-model-v1"
           required
+          error={errors.name}
         />
         <Input
           label="Version"
@@ -44,6 +58,7 @@ export function ModelRegisterDialog({
           onChange={(e) => setVersion(e.target.value)}
           placeholder="1.0.0"
           required
+          error={errors.version}
         />
         <Input
           label="Model Type"

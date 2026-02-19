@@ -16,9 +16,19 @@ export function EnsembleCreateDialog({
   const [name, setName] = useState("");
   const [service, setService] = useState("sentiment");
   const [strategy, setStrategy] = useState("weighted_average");
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    const newErrors: Record<string, string> = {};
+    if (!name.trim()) {
+      newErrors.name = "Name is required";
+    }
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+    setErrors({});
     onClose();
     setName("");
     setService("sentiment");
@@ -34,6 +44,7 @@ export function EnsembleCreateDialog({
           onChange={(e) => setName(e.target.value)}
           placeholder="my-ensemble"
           required
+          error={errors.name}
         />
         <Select
           label="Service"

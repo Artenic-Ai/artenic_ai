@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ErrorState } from "@/components/ui/error-state";
 import { Input, Select } from "@/components/ui/input";
-import { PageSpinner } from "@/components/ui/spinner";
+import { CardSkeleton } from "@/components/ui/skeleton";
 import { useAuditLog, useSettingsSchema, useSettingsValues } from "@/hooks/use-settings";
 import { formatDateTime } from "@/lib/format";
 
@@ -17,7 +17,15 @@ export function SettingsPage() {
   const audit = useAuditLog();
   const [editedValues, setEditedValues] = useState<Record<string, string>>({});
 
-  if (schema.isLoading || values.isLoading) return <PageSpinner />;
+  if (schema.isLoading || values.isLoading) {
+    return (
+      <PageShell title="Settings" description="Runtime configuration and audit log.">
+        <CardSkeleton />
+        <CardSkeleton />
+        <CardSkeleton />
+      </PageShell>
+    );
+  }
   if (schema.isError || values.isError) {
     return (
       <ErrorState

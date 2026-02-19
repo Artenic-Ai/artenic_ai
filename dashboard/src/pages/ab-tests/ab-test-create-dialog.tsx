@@ -16,13 +16,28 @@ export function ABTestCreateDialog({
   const [name, setName] = useState("");
   const [service, setService] = useState("sentiment");
   const [metric, setMetric] = useState("accuracy");
+  const [minSamples, setMinSamples] = useState("5000");
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    const newErrors: Record<string, string> = {};
+    if (!name.trim()) {
+      newErrors.name = "Name is required";
+    }
+    if (Number(minSamples) <= 0) {
+      newErrors.min_samples = "Min samples must be greater than 0";
+    }
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+    setErrors({});
     onClose();
     setName("");
     setService("sentiment");
     setMetric("accuracy");
+    setMinSamples("5000");
   }
 
   return (
@@ -34,6 +49,7 @@ export function ABTestCreateDialog({
           onChange={(e) => setName(e.target.value)}
           placeholder="model-a-vs-model-b"
           required
+          error={errors.name}
         />
         <Select
           label="Service"
@@ -61,8 +77,10 @@ export function ABTestCreateDialog({
         <Input
           label="Min Samples"
           type="number"
-          defaultValue="5000"
+          value={minSamples}
+          onChange={(e) => setMinSamples(e.target.value)}
           placeholder="5000"
+          error={errors.min_samples}
         />
         <div className="flex justify-end gap-2 pt-2">
           <Button variant="ghost" type="button" onClick={onClose}>
