@@ -63,6 +63,9 @@ COPY --from=build /app/.venv /app/.venv
 COPY --from=build /app/packages/sdk/src /app/packages/sdk/src
 COPY --from=build /app/packages/platform/src /app/packages/platform/src
 
+# Create writable data directory for dataset storage
+RUN mkdir -p /app/data/datasets && chown -R artenic:artenic /app/data
+
 # Set PATH to use the virtual environment
 ENV PATH="/app/.venv/bin:$PATH" \
     PYTHONUNBUFFERED=1 \
