@@ -1,26 +1,82 @@
 import { useState } from "react";
-import { useParams } from "react-router";
-import { Cloud, ExternalLink, HardDrive, Server } from "lucide-react";
+import { useNavigate, useParams } from "react-router";
+import {
+  Cloud,
+  ExternalLink,
+  HardDrive,
+  Play,
+  Power,
+  PowerOff,
+  Server,
+  Settings,
+  Trash2,
+  Zap,
+} from "lucide-react";
 
 import { PageShell } from "@/components/layout/page-shell";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
+import { Button } from "@/components/ui/button";
 import { Card, StatCard } from "@/components/ui/card";
 import { type Column, DataTable } from "@/components/ui/data-table";
 import { DetailRow } from "@/components/ui/detail-row";
+import { Dialog } from "@/components/ui/dialog";
 import { ErrorState } from "@/components/ui/error-state";
 import { DetailSkeleton, TableSkeleton } from "@/components/ui/skeleton";
+import { toast } from "@/components/ui/toast";
 import {
+  useDeleteProvider,
+  useDisableProvider,
+  useEnableProvider,
   useProvider,
   useProviderCompute,
   useProviderRegions,
   useProviderStorage,
+  useTestProvider,
 } from "@/hooks/use-providers";
 import { formatBytes, formatDateTime, formatNumber } from "@/lib/format";
 import type {
   ProviderComputeInstance,
   ProviderRegion,
+  ProviderStatus,
   ProviderStorageOption,
 } from "@/types/api";
+
+import { ProviderConfigureDialog } from "./provider-configure-dialog";
+import { ProviderLogo } from "./provider-logos";
+
+/* ── Status helpers ──────────────────────────────────────────────────────── */
+
+function statusColor(status: ProviderStatus): string {
+  switch (status) {
+    case "connected":
+      return "bg-success";
+    case "configured":
+      return "bg-warning";
+    case "error":
+      return "bg-danger";
+    case "disabled":
+      return "bg-text-muted";
+    default:
+      return "bg-text-muted";
+  }
+}
+
+function statusLabel(status: ProviderStatus): string {
+  switch (status) {
+    case "connected":
+      return "Connected";
+    case "configured":
+      return "Configured";
+    case "error":
+      return "Error";
+    case "disabled":
+      return "Disabled";
+    default:
+      return "Unconfigured";
+  }
+}
+
+/* ── Table columns ───────────────────────────────────────────────────────── */
 
 const STORAGE_COLUMNS: Column<ProviderStorageOption>[] = [
   {
@@ -134,9 +190,14 @@ const REGION_COLUMNS: Column<ProviderRegion>[] = [
   },
 ];
 
-type Tab = "overview" | "storage" | "compute" | "regions";
+/* ── Tabs ─────────────────────────────────────────────────────────────────── */
+
+type Tab = "overview" | "configuration" | "storage" | "compute" | "regions";
+
+/* ── Page ─────────────────────────────────────────────────────────────────── */
 
 export function ProviderDetailPage() {
+  const navigate = useNavigate();
   const { providerId } = useParams<{ providerId: string }>();
   const id = providerId ?? "";
   const { data: provider, isLoading, isError, refetch } = useProvider(id);
@@ -151,6 +212,13 @@ export function ProviderDetailPage() {
   );
 
   const [tab, setTab] = useState<Tab>("overview");
+  const [configOpen, setConfigOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+
+  const testMutation = useTestProvider(id);
+  const enableMutation = useEnableProvider(id);
+  const disableMutation = useDisableProvider(id);
+  const deleteMutation = useDeleteProvider(id);
 
   if (isLoading) {
     return (
@@ -170,25 +238,81 @@ export function ProviderDetailPage() {
     );
   }
 
-  const statusColor =
-    provider.status === "connected"
-      ? "bg-success"
-      : provider.status === "error"
-        ? "bg-danger"
-        : provider.status === "configured"
-          ? "bg-warning"
-          : "bg-text-muted";
+  function handleTest() {
+    testMutation.mutate(undefined, {
+      onSuccess: (result) => {
+        if (result.success) {
+          toast(
+            `Connection OK (${result.latency_ms?.toFixed(0) ?? "?"}ms)`,
+            "success",
+          );
+        } else {
+          toast(`Connection failed: ${result.message}`, "error");
+        }
+        void refetch();
+      },
+      onError: () => toast("Test failed", "error"),
+    });
+  }
 
-  const tabs: { key: Tab; label: string }[] = [
-    { key: "overview", label: "Overview" },
+  function handleToggle() {
+    if (provider!.enabled) {
+      disableMutation.mutate(undefined, {
+        onSuccess: () => {
+          toast("Provider disabled", "info");
+          void refetch();
+        },
+        onError: () => toast("Failed to disable", "error"),
+      });
+    } else {
+      enableMutation.mutate(undefined, {
+        onSuccess: () => {
+          toast("Provider enabled", "success");
+          void refetch();
+        },
+        onError: () => toast("Failed to enable", "error"),
+      });
+    }
+  }
+
+  function handleDelete() {
+    deleteMutation.mutate(undefined, {
+      onSuccess: () => {
+        toast("Provider configuration deleted", "success");
+        navigate("/providers");
+      },
+      onError: () => toast("Failed to delete", "error"),
+    });
+  }
+
+  const tabs: { key: Tab; label: string; icon: React.ReactNode }[] = [
+    { key: "overview", label: "Overview", icon: <Zap size={14} /> },
+    {
+      key: "configuration",
+      label: "Configuration",
+      icon: <Settings size={14} />,
+    },
     ...(provider.enabled
       ? [
-          { key: "storage" as Tab, label: "Storage" },
-          { key: "compute" as Tab, label: "Compute" },
-          { key: "regions" as Tab, label: "Regions" },
+          {
+            key: "storage" as Tab,
+            label: "Storage",
+            icon: <HardDrive size={14} />,
+          },
+          {
+            key: "compute" as Tab,
+            label: "Compute",
+            icon: <Server size={14} />,
+          },
+          { key: "regions" as Tab, label: "Regions", icon: <Cloud size={14} /> },
         ]
       : []),
   ];
+
+  const anyPending =
+    testMutation.isPending ||
+    enableMutation.isPending ||
+    disableMutation.isPending;
 
   return (
     <PageShell
@@ -202,6 +326,53 @@ export function ProviderDetailPage() {
           ]}
         />
       }
+      actions={
+        <div className="flex items-center gap-2">
+          {provider.has_credentials && (
+            <Button
+              variant="secondary"
+              onClick={handleTest}
+              disabled={anyPending}
+            >
+              <Play size={14} className="mr-1.5" />
+              {testMutation.isPending ? "Testing..." : "Test"}
+            </Button>
+          )}
+          <Button onClick={() => setConfigOpen(true)}>
+            <Settings size={14} className="mr-1.5" />
+            Configure
+          </Button>
+          {provider.has_credentials && (
+            <Button
+              variant={provider.enabled ? "ghost" : "secondary"}
+              onClick={handleToggle}
+              disabled={anyPending}
+            >
+              {provider.enabled ? (
+                <>
+                  <PowerOff size={14} className="mr-1.5" />
+                  Disable
+                </>
+              ) : (
+                <>
+                  <Power size={14} className="mr-1.5" />
+                  Enable
+                </>
+              )}
+            </Button>
+          )}
+          {provider.has_credentials && (
+            <Button
+              variant="destructive"
+              onClick={() => setDeleteOpen(true)}
+              disabled={anyPending}
+            >
+              <Trash2 size={14} className="mr-1.5" />
+              Delete
+            </Button>
+          )}
+        </div>
+      }
     >
       {/* Tabs */}
       <div role="tablist" className="flex gap-1 rounded-lg bg-surface-2 p-1">
@@ -212,28 +383,29 @@ export function ProviderDetailPage() {
             role="tab"
             aria-selected={tab === t.key}
             onClick={() => setTab(t.key)}
-            className={`rounded-md px-3 py-1.5 text-sm transition-colors ${
+            className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm transition-colors ${
               tab === t.key
                 ? "bg-surface-1 font-medium text-text-primary shadow-sm"
                 : "text-text-secondary hover:text-text-primary"
             }`}
           >
+            {t.icon}
             {t.label}
           </button>
         ))}
       </div>
 
-      {/* Tab content */}
+      {/* ── Overview ──────────────────────────────────────────────────────── */}
       {tab === "overview" && (
         <div role="tabpanel" className="space-y-6">
-          {/* Stats */}
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <StatCard
               title="Status"
-              value={provider.status}
+              value={statusLabel(provider.status)}
+              subtitle={provider.status_message || undefined}
               icon={
                 <span
-                  className={`inline-block h-2.5 w-2.5 rounded-full ${statusColor}`}
+                  className={`inline-block h-2.5 w-2.5 rounded-full ${statusColor(provider.status)}`}
                 />
               }
             />
@@ -257,11 +429,14 @@ export function ProviderDetailPage() {
             />
           </div>
 
-          {/* Details */}
-          <Card title="Configuration">
+          {/* Info card */}
+          <Card title="Details">
             <dl className="space-y-3">
               <DetailRow label="Provider ID" value={provider.id} />
-              <DetailRow label="Enabled" value={provider.enabled ? "Yes" : "No"} />
+              <DetailRow
+                label="Enabled"
+                value={provider.enabled ? "Yes" : "No"}
+              />
               <DetailRow
                 label="Credentials"
                 value={provider.has_credentials ? "Configured" : "Not set"}
@@ -282,20 +457,17 @@ export function ProviderDetailPage() {
                   }
                 />
               )}
-              {provider.status_message && (
-                <DetailRow label="Message" value={provider.status_message} />
+              {provider.created_at && (
+                <DetailRow
+                  label="Created"
+                  value={formatDateTime(provider.created_at)}
+                />
               )}
-              {Object.keys(provider.config).length > 0 && (
-                <>
-                  <div className="border-t border-border pt-3">
-                    <span className="text-xs font-medium uppercase tracking-wider text-text-muted">
-                      Settings
-                    </span>
-                  </div>
-                  {Object.entries(provider.config).map(([key, val]) => (
-                    <DetailRow key={key} label={key} value={String(val)} />
-                  ))}
-                </>
+              {provider.updated_at && (
+                <DetailRow
+                  label="Updated"
+                  value={formatDateTime(provider.updated_at)}
+                />
               )}
             </dl>
           </Card>
@@ -328,6 +500,59 @@ export function ProviderDetailPage() {
         </div>
       )}
 
+      {/* ── Configuration ─────────────────────────────────────────────────── */}
+      {tab === "configuration" && (
+        <div role="tabpanel" className="space-y-6">
+          <Card title="Credentials">
+            {provider.has_credentials ? (
+              <dl className="space-y-3">
+                {provider.credential_fields.map((field) => (
+                  <DetailRow
+                    key={field.key}
+                    label={field.label}
+                    value={field.secret ? "********" : "(set)"}
+                  />
+                ))}
+              </dl>
+            ) : (
+              <div className="flex flex-col items-center gap-3 py-6 text-center">
+                <p className="text-sm text-text-muted">
+                  No credentials configured yet.
+                </p>
+                <Button onClick={() => setConfigOpen(true)}>
+                  <Settings size={14} className="mr-1.5" />
+                  Configure Now
+                </Button>
+              </div>
+            )}
+          </Card>
+
+          {provider.config_fields.length > 0 && (
+            <Card title="Settings">
+              <dl className="space-y-3">
+                {provider.config_fields.map((field) => (
+                  <DetailRow
+                    key={field.key}
+                    label={field.label}
+                    value={provider.config[field.key] ?? field.default ?? "-"}
+                  />
+                ))}
+              </dl>
+            </Card>
+          )}
+
+          {provider.has_credentials && (
+            <div className="flex gap-2">
+              <Button onClick={() => setConfigOpen(true)}>
+                <Settings size={14} className="mr-1.5" />
+                Edit Configuration
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── Storage ───────────────────────────────────────────────────────── */}
       {tab === "storage" && (
         <div role="tabpanel">
           <Card title="Storage Options">
@@ -348,6 +573,7 @@ export function ProviderDetailPage() {
         </div>
       )}
 
+      {/* ── Compute ───────────────────────────────────────────────────────── */}
       {tab === "compute" && (
         <div role="tabpanel">
           <Card title="Compute Instances">
@@ -368,6 +594,7 @@ export function ProviderDetailPage() {
         </div>
       )}
 
+      {/* ── Regions ───────────────────────────────────────────────────────── */}
       {tab === "regions" && (
         <div role="tabpanel">
           <Card title="Available Regions">
@@ -385,6 +612,42 @@ export function ProviderDetailPage() {
           </Card>
         </div>
       )}
+
+      {/* ── Dialogs ───────────────────────────────────────────────────────── */}
+      <ProviderConfigureDialog
+        provider={provider}
+        open={configOpen}
+        onClose={() => setConfigOpen(false)}
+        onConfigured={() => void refetch()}
+      />
+
+      <Dialog
+        open={deleteOpen}
+        onClose={() => setDeleteOpen(false)}
+        title="Delete Provider Configuration"
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-text-secondary">
+            This will remove all stored credentials and settings for{" "}
+            <strong className="text-text-primary">
+              {provider.display_name}
+            </strong>
+            . The provider will return to an unconfigured state.
+          </p>
+          <div className="flex justify-end gap-2">
+            <Button variant="ghost" onClick={() => setDeleteOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={deleteMutation.isPending}
+            >
+              {deleteMutation.isPending ? "Deleting..." : "Delete"}
+            </Button>
+          </div>
+        </div>
+      </Dialog>
     </PageShell>
   );
 }

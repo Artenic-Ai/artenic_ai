@@ -1,8 +1,9 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { apiFetch } from "@/lib/api-client";
 import { queryKeys } from "@/lib/query-keys";
 import type {
+  ConfigureProviderRequest,
   ConnectionTestResult,
   ProviderComputeInstance,
   ProviderDetail,
@@ -10,6 +11,8 @@ import type {
   ProviderStorageOption,
   ProviderSummary,
 } from "@/types/api";
+
+/* ── Queries ─────────────────────────────────────────────────────────────── */
 
 export function useProviders() {
   return useQuery({
@@ -51,13 +54,67 @@ export function useProviderRegions(id: string) {
   });
 }
 
+/* ── Mutations ───────────────────────────────────────────────────────────── */
+
+export function useConfigureProvider(id: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: ConfigureProviderRequest) =>
+      apiFetch<ProviderDetail>(`/providers/${id}/configure`, {
+        method: "PUT",
+        body: JSON.stringify(body),
+      }),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: queryKeys.providers.detail(id) });
+      void qc.invalidateQueries({ queryKey: queryKeys.providers.list() });
+    },
+  });
+}
+
+export function useEnableProvider(id: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () =>
+      apiFetch<ProviderDetail>(`/providers/${id}/enable`, { method: "POST" }),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: queryKeys.providers.detail(id) });
+      void qc.invalidateQueries({ queryKey: queryKeys.providers.list() });
+    },
+  });
+}
+
+export function useDisableProvider(id: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () =>
+      apiFetch<ProviderDetail>(`/providers/${id}/disable`, { method: "POST" }),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: queryKeys.providers.detail(id) });
+      void qc.invalidateQueries({ queryKey: queryKeys.providers.list() });
+    },
+  });
+}
+
+export function useDeleteProvider(id: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () =>
+      apiFetch<void>(`/providers/${id}`, { method: "DELETE" }),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: queryKeys.providers.list() });
+    },
+  });
+}
+
 export function useTestProvider(id: string) {
-  return useQuery({
-    queryKey: [...queryKeys.providers.all, id, "test"] as const,
-    queryFn: () =>
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () =>
       apiFetch<ConnectionTestResult>(`/providers/${id}/test`, {
         method: "POST",
       }),
-    enabled: false,
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: queryKeys.providers.detail(id) });
+    },
   });
 }

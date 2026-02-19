@@ -155,6 +155,8 @@ module = [
     "google.cloud.*",
     "google.auth",
     "google.auth.*",
+    "google.oauth2",
+    "google.oauth2.*",
     "azure",
     "azure.*",
     "oci",

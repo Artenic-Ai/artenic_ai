@@ -297,7 +297,61 @@ class TestCatalog:
         assert len(defn.credential_fields) == 4
 
         all_defns = list_provider_definitions()
-        assert len(all_defns) >= 1
+        assert len(all_defns) >= 7
+
+    def test_infomaniak_in_catalog(self) -> None:
+        from artenic_ai_platform.providers_hub.catalog import get_provider_definition
+
+        defn = get_provider_definition("infomaniak")
+        assert defn is not None
+        assert defn.connector_type == "openstack"
+        assert len(defn.capabilities) == 2
+        assert len(defn.credential_fields) == 4
+
+    def test_scaleway_in_catalog(self) -> None:
+        from artenic_ai_platform.providers_hub.catalog import get_provider_definition
+
+        defn = get_provider_definition("scaleway")
+        assert defn is not None
+        assert defn.connector_type == "scaleway"
+        assert len(defn.capabilities) == 2
+        assert len(defn.credential_fields) == 3
+
+    def test_vastai_in_catalog(self) -> None:
+        from artenic_ai_platform.providers_hub.catalog import get_provider_definition
+
+        defn = get_provider_definition("vastai")
+        assert defn is not None
+        assert defn.connector_type == "vastai"
+        assert len(defn.capabilities) == 1  # compute-only
+        assert len(defn.credential_fields) == 1
+
+    def test_aws_in_catalog(self) -> None:
+        from artenic_ai_platform.providers_hub.catalog import get_provider_definition
+
+        defn = get_provider_definition("aws")
+        assert defn is not None
+        assert defn.connector_type == "aws"
+        assert len(defn.capabilities) == 2
+        assert len(defn.credential_fields) == 2
+
+    def test_gcp_in_catalog(self) -> None:
+        from artenic_ai_platform.providers_hub.catalog import get_provider_definition
+
+        defn = get_provider_definition("gcp")
+        assert defn is not None
+        assert defn.connector_type == "gcp"
+        assert len(defn.capabilities) == 2
+        assert len(defn.credential_fields) == 2
+
+    def test_azure_in_catalog(self) -> None:
+        from artenic_ai_platform.providers_hub.catalog import get_provider_definition
+
+        defn = get_provider_definition("azure")
+        assert defn is not None
+        assert defn.connector_type == "azure"
+        assert len(defn.capabilities) == 2
+        assert len(defn.credential_fields) == 4
 
     def test_unknown_returns_none(self) -> None:
         from artenic_ai_platform.providers_hub.catalog import get_provider_definition

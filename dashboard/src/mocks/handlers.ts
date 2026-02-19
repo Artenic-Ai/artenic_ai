@@ -26,6 +26,7 @@ import {
   MOCK_PROVIDER_REGIONS,
   MOCK_PROVIDER_STORAGE,
   MOCK_PROVIDERS,
+  MOCK_TEST_RESULTS,
 } from "./providers";
 import { MOCK_TRAINING_JOBS } from "./training";
 
@@ -195,15 +196,51 @@ export async function handleDemoRequest<T>(
     if (detail) return detail as T;
     throw new ApiError(404, `Provider ${pid} not found`);
   }
-  if (segments[0] === "providers" && method === "POST") {
-    if (segments.length === 3 && segments[2] === "test") {
+  if (segments[0] === "providers" && method === "PUT") {
+    const pid = segments[1] ?? "";
+    if (segments.length === 3 && segments[2] === "configure") {
+      const detail = MOCK_PROVIDER_DETAILS[pid];
+      if (!detail) throw new ApiError(404, `Provider ${pid} not found`);
       return {
-        success: true,
-        message: "Connected — 42 flavors available",
-        latency_ms: 85.3,
+        ...detail,
+        status: "configured",
+        status_message: "Credentials saved — run a connection test to activate",
+        has_credentials: true,
+        updated_at: new Date().toISOString(),
+      } as T;
+    }
+  }
+  if (segments[0] === "providers" && method === "POST") {
+    const pid = segments[1] ?? "";
+    if (segments.length === 3 && segments[2] === "test") {
+      const result = MOCK_TEST_RESULTS[pid];
+      return (result ?? { success: true, message: "Connected", latency_ms: 100 }) as T;
+    }
+    if (segments.length === 3 && segments[2] === "enable") {
+      const detail = MOCK_PROVIDER_DETAILS[pid];
+      if (!detail) throw new ApiError(404, `Provider ${pid} not found`);
+      return {
+        ...detail,
+        enabled: true,
+        status: "connected",
+        status_message: "Connected — provider enabled",
+        last_checked_at: new Date().toISOString(),
+      } as T;
+    }
+    if (segments.length === 3 && segments[2] === "disable") {
+      const detail = MOCK_PROVIDER_DETAILS[pid];
+      if (!detail) throw new ApiError(404, `Provider ${pid} not found`);
+      return {
+        ...detail,
+        enabled: false,
+        status: "disabled",
+        status_message: "Provider disabled by user",
       } as T;
     }
     return { success: true } as T;
+  }
+  if (segments[0] === "providers" && method === "DELETE") {
+    return { deleted: true } as T;
   }
 
   // ── Activity ────────────────────────────────────────────────────────────────

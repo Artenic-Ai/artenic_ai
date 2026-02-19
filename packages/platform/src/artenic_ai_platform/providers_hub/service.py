@@ -48,12 +48,44 @@ def _get_connector(connector_type: str, provider_id: str) -> ProviderConnector:
     if cache_key in _CONNECTOR_CACHE:
         return _CONNECTOR_CACHE[cache_key]
 
+    connector: ProviderConnector
+
     if connector_type == "openstack":
         from artenic_ai_platform.providers_hub.connectors.openstack import (
             OpenStackConnector,
         )
 
-        connector: ProviderConnector = OpenStackConnector(provider_id=provider_id)
+        connector = OpenStackConnector(provider_id=provider_id)
+    elif connector_type == "scaleway":
+        from artenic_ai_platform.providers_hub.connectors.scaleway import (
+            ScalewayConnector,
+        )
+
+        connector = ScalewayConnector(provider_id=provider_id)
+    elif connector_type == "vastai":
+        from artenic_ai_platform.providers_hub.connectors.vastai import (
+            VastaiConnector,
+        )
+
+        connector = VastaiConnector(provider_id=provider_id)
+    elif connector_type == "aws":
+        from artenic_ai_platform.providers_hub.connectors.aws import (
+            AwsConnector,
+        )
+
+        connector = AwsConnector(provider_id=provider_id)
+    elif connector_type == "gcp":
+        from artenic_ai_platform.providers_hub.connectors.gcp import (
+            GcpConnector,
+        )
+
+        connector = GcpConnector(provider_id=provider_id)
+    elif connector_type == "azure":
+        from artenic_ai_platform.providers_hub.connectors.azure import (
+            AzureConnector,
+        )
+
+        connector = AzureConnector(provider_id=provider_id)
     else:
         msg = f"Unknown connector type: {connector_type}"
         raise ValueError(msg)

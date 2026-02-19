@@ -516,6 +516,56 @@ class TestGetConnectorOpenStack:
         _clear_connector_cache()
 
 
+class TestGetConnectorScaleway:
+    def test_scaleway_connector_created(self) -> None:
+        from artenic_ai_platform.providers_hub.connectors.scaleway import ScalewayConnector
+
+        _clear_connector_cache()
+        connector = _get_connector("scaleway", "test-scw-id")
+        assert isinstance(connector, ScalewayConnector)
+        _clear_connector_cache()
+
+
+class TestGetConnectorVastai:
+    def test_vastai_connector_created(self) -> None:
+        from artenic_ai_platform.providers_hub.connectors.vastai import VastaiConnector
+
+        _clear_connector_cache()
+        connector = _get_connector("vastai", "test-vast-id")
+        assert isinstance(connector, VastaiConnector)
+        _clear_connector_cache()
+
+
+class TestGetConnectorAws:
+    def test_aws_connector_created(self) -> None:
+        from artenic_ai_platform.providers_hub.connectors.aws import AwsConnector
+
+        _clear_connector_cache()
+        connector = _get_connector("aws", "test-aws-id")
+        assert isinstance(connector, AwsConnector)
+        _clear_connector_cache()
+
+
+class TestGetConnectorGcp:
+    def test_gcp_connector_created(self) -> None:
+        from artenic_ai_platform.providers_hub.connectors.gcp import GcpConnector
+
+        _clear_connector_cache()
+        connector = _get_connector("gcp", "test-gcp-id")
+        assert isinstance(connector, GcpConnector)
+        _clear_connector_cache()
+
+
+class TestGetConnectorAzure:
+    def test_azure_connector_created(self) -> None:
+        from artenic_ai_platform.providers_hub.connectors.azure import AzureConnector
+
+        _clear_connector_cache()
+        connector = _get_connector("azure", "test-azure-id")
+        assert isinstance(connector, AzureConnector)
+        _clear_connector_cache()
+
+
 # ======================================================================
 # Coverage: _test_connection with unknown provider_id (line 309)
 # ======================================================================
