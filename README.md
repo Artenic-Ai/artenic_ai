@@ -65,7 +65,7 @@ artenic_ai/
 | Package | Description | Status | Tests | Coverage |
 |---------|-------------|--------|-------|----------|
 | `sdk` | BaseModel contract, schemas, ensemble, serialization, decorators | **Complete** | 614 | 100% |
-| `platform` | FastAPI gateway, registry, training, datasets, 16 providers | **Complete** | 1548 | 100% |
+| `platform` | FastAPI gateway, registry, training, datasets, 16 providers | **Complete** | 1554 | 100% |
 | `cli` | Command-line interface — 11 command groups, 50+ subcommands | **Complete** | 198 | 100% |
 | `optimizer` | LTR-based training instance selection | Stub | — | — |
 | `dashboard` | React admin UI — 10 pages, dark theme, demo mode | **Complete** | 68 | — |

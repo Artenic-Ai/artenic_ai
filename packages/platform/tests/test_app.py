@@ -6,11 +6,18 @@ import pytest
 from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
 
-from artenic_ai_platform.app import _lifespan, create_app
+from artenic_ai_platform.app import _build_dataset_storage, _lifespan, create_app
 from artenic_ai_platform.config.crypto import SecretManager
+from artenic_ai_platform.datasets.storage import (
+    AzureBlobStorage,
+    FilesystemStorage,
+    GCSStorage,
+    OVHSwiftStorage,
+    S3Storage,
+)
 from artenic_ai_platform.db.engine import create_async_engine, create_tables
 from artenic_ai_platform.deps import build_get_db, get_db
-from artenic_ai_platform.settings import PlatformSettings
+from artenic_ai_platform.settings import DatasetConfig, DatasetStorageConfig, PlatformSettings
 
 # ======================================================================
 # deps.py — get_db
@@ -303,3 +310,60 @@ class TestMiddlewareStack:
         async with AsyncClient(transport=transport, base_url="http://test") as client:
             resp = await client.get("/health")
         assert "x-request-id" in resp.headers
+
+
+# ======================================================================
+# app.py — _build_dataset_storage
+# ======================================================================
+
+
+def _settings_with_storage(backend: str, **overrides: str) -> PlatformSettings:
+    """Create PlatformSettings with a specific dataset storage backend."""
+    storage_kwargs: dict[str, str] = {"backend": backend, **overrides}
+    return PlatformSettings(
+        database_url="sqlite+aiosqlite://",
+        api_key="",
+        secret_key="test",
+        otel_enabled=False,
+        dataset=DatasetConfig(storage=DatasetStorageConfig(**storage_kwargs)),
+    )
+
+
+class TestBuildDatasetStorage:
+    def test_filesystem_backend(self) -> None:
+        settings = _settings_with_storage("filesystem", local_dir="/tmp/ds")
+        storage = _build_dataset_storage(settings)
+        assert isinstance(storage, FilesystemStorage)
+
+    def test_s3_backend(self) -> None:
+        settings = _settings_with_storage(
+            "s3", bucket="my-bucket", prefix="ds/", region="eu-west-1"
+        )
+        storage = _build_dataset_storage(settings)
+        assert isinstance(storage, S3Storage)
+
+    def test_gcs_backend(self) -> None:
+        settings = _settings_with_storage("gcs", bucket="gcs-bucket", project_id="proj-1")
+        storage = _build_dataset_storage(settings)
+        assert isinstance(storage, GCSStorage)
+
+    def test_azure_backend(self) -> None:
+        settings = _settings_with_storage(
+            "azure", container="my-container", connection_string="DefaultEndpoints..."
+        )
+        storage = _build_dataset_storage(settings)
+        assert isinstance(storage, AzureBlobStorage)
+
+    def test_ovh_backend(self) -> None:
+        settings = _settings_with_storage(
+            "ovh", container="ovh-ctr", endpoint_url="https://s3.ovh.net", region="gra"
+        )
+        storage = _build_dataset_storage(settings)
+        assert isinstance(storage, OVHSwiftStorage)
+
+    def test_unknown_backend_raises(self) -> None:
+        settings = _settings_with_storage("filesystem")
+        # Monkey-patch to bypass Literal validation
+        settings.dataset.storage.backend = "unknown"  # type: ignore[assignment]
+        with pytest.raises(ValueError, match="Unknown dataset storage backend"):
+            _build_dataset_storage(settings)

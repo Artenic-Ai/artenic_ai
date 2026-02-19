@@ -44,7 +44,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Validation error handler: sanitize non-serializable `ctx` values
 
 #### Quality
-- Platform: 1548 tests (142 dataset tests), 100% coverage
+- Platform: 1554 tests (148 dataset tests), 100% coverage
 - CLI: 198 tests (32 dataset commands + 7 client methods), 100% coverage
 - Dashboard: 68 tests, build clean
 - mypy strict — 0 errors across SDK (26), Platform (76), CLI (18) source files
