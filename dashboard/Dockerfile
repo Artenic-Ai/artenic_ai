@@ -32,8 +32,10 @@ COPY --from=builder /app/dist /usr/share/nginx/html
 # Copy nginx configuration
 COPY dashboard/nginx.conf /etc/nginx/conf.d/default.conf
 
-# Run as non-root user
-RUN chown -R nginx:nginx /usr/share/nginx/html
+# Prepare cache dirs and run as non-root user
+RUN chown -R nginx:nginx /usr/share/nginx/html \
+    && mkdir -p /var/cache/nginx /var/run \
+    && chown -R nginx:nginx /var/cache/nginx /var/run
 USER nginx
 
 EXPOSE 80
