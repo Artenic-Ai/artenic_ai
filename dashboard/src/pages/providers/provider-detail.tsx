@@ -197,7 +197,7 @@ export function ProviderDetailPage() {
       breadcrumb={
         <Breadcrumb
           items={[
-            { label: "Providers", href: "/providers" },
+            { label: "Providers", to: "/providers" },
             { label: provider.display_name },
           ]}
         />

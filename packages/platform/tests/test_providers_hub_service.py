@@ -481,3 +481,185 @@ class TestDisableStatus:
             detail = await svc.enable_provider("ovh")
         assert detail.enabled is True
         assert detail.status == "connected"
+
+
+# ======================================================================
+# Coverage: _get_connector cache hit (line 49)
+# ======================================================================
+
+
+class TestGetConnectorCacheHit:
+    def test_second_call_returns_cached_connector(self) -> None:
+        """Calling _get_connector twice with same args returns the cached instance."""
+        _clear_connector_cache()
+        first = _get_connector("openstack", "test-cache-id")
+        second = _get_connector("openstack", "test-cache-id")
+        assert first is second
+        _clear_connector_cache()
+
+
+# ======================================================================
+# Coverage: _get_connector openstack branch (lines 52-56, 61-62)
+# ======================================================================
+
+
+class TestGetConnectorOpenStack:
+    def test_openstack_connector_created(self) -> None:
+        """_get_connector('openstack', ...) creates an OpenStackConnector."""
+        from artenic_ai_platform.providers_hub.connectors.openstack import (
+            OpenStackConnector,
+        )
+
+        _clear_connector_cache()
+        connector = _get_connector("openstack", "test-os-id")
+        assert isinstance(connector, OpenStackConnector)
+        _clear_connector_cache()
+
+
+# ======================================================================
+# Coverage: _test_connection with unknown provider_id (line 309)
+# ======================================================================
+
+
+class TestTestConnectionUnknownProvider:
+    async def test_test_connection_unknown_provider(
+        self,
+        svc: ProviderService,
+        session: AsyncSession,
+    ) -> None:
+        """_test_connection returns failure for a provider_id not in catalog."""
+        # Insert a record with an id that is NOT in PROVIDER_CATALOG
+        rec = ProviderRecord(
+            id="nonexistent_provider_xyz",
+            display_name="Ghost Provider",
+            credentials="",
+            config={},
+            status="configured",
+        )
+        session.add(rec)
+        await session.commit()
+        await session.refresh(rec)
+
+        result = await svc._test_connection("nonexistent_provider_xyz", rec)
+        assert result.success is False
+        assert "Unknown provider" in result.message
+
+
+# ======================================================================
+# Coverage: defn is None in list_all_storage_options /
+#           list_all_compute_instances (lines 374, 399)
+# ======================================================================
+
+
+class TestAggregationSkipsUnknownProvider:
+    async def test_list_all_storage_skips_unknown_provider(
+        self,
+        svc: ProviderService,
+        session: AsyncSession,
+    ) -> None:
+        """list_all_storage_options skips providers not in the catalog."""
+        rec = ProviderRecord(
+            id="ghost_provider_storage",
+            display_name="Ghost",
+            credentials="",
+            config={},
+            status="connected",
+            enabled=True,
+        )
+        session.add(rec)
+        await session.commit()
+
+        result = await svc.list_all_storage_options()
+        # The ghost provider has no catalog entry (defn is None) → skipped
+        assert result == []
+
+    async def test_list_all_compute_skips_unknown_provider(
+        self,
+        svc: ProviderService,
+        session: AsyncSession,
+    ) -> None:
+        """list_all_compute_instances skips providers not in the catalog."""
+        rec = ProviderRecord(
+            id="ghost_provider_compute",
+            display_name="Ghost",
+            credentials="",
+            config={},
+            status="connected",
+            enabled=True,
+        )
+        session.add(rec)
+        await session.commit()
+
+        result = await svc.list_all_compute_instances()
+        # The ghost provider has no catalog entry (defn is None) → skipped
+        assert result == []
+
+
+# ======================================================================
+# Coverage: except Exception in list_all_compute_instances (lines 408-409)
+# ======================================================================
+
+
+class TestAggregationToleratesComputeError:
+    async def test_compute_aggregation_tolerates_provider_error(
+        self,
+        svc: ProviderService,
+    ) -> None:
+        """One provider failing should not break compute aggregation."""
+        await svc.configure_provider("ovh", CREDS, CONFIG)
+        with patch(
+            "artenic_ai_platform.providers_hub.service._get_connector",
+            return_value=_mock_connector_success(),
+        ):
+            await svc.enable_provider("ovh")
+
+        mock = AsyncMock()
+        mock.list_compute_instances.side_effect = RuntimeError("Boom")
+        with patch(
+            "artenic_ai_platform.providers_hub.service._get_connector",
+            return_value=mock,
+        ):
+            result = await svc.list_all_compute_instances()
+        assert result == []
+
+
+# ======================================================================
+# Coverage: _decrypt_credentials with empty credentials (line 423)
+# ======================================================================
+
+
+class TestDecryptEmptyCredentials:
+    async def test_empty_credentials_returns_empty_dict(
+        self,
+        svc: ProviderService,
+        session: AsyncSession,
+    ) -> None:
+        """_decrypt_credentials returns {} when credentials is empty string."""
+        rec = ProviderRecord(
+            id="empty_creds_provider",
+            display_name="Empty Creds",
+            credentials="",
+            config={},
+            status="configured",
+        )
+        session.add(rec)
+        await session.commit()
+        await session.refresh(rec)
+
+        result = svc._decrypt_credentials(rec)
+        assert result == {}
+
+
+# ======================================================================
+# Coverage: _resolve_active_provider with unknown provider_id (lines 448-449)
+# ======================================================================
+
+
+class TestResolveActiveProviderUnknown:
+    async def test_unknown_provider_raises_via_storage(
+        self,
+        svc: ProviderService,
+    ) -> None:
+        """list_storage_for_provider with unknown id raises ValueError."""
+        with pytest.raises(ValueError, match="Unknown provider"):
+            await svc.list_storage_for_provider("nonexistent_provider_xyz")

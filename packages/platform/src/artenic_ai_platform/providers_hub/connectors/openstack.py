@@ -35,7 +35,7 @@ try:
     _HAS_OPENSTACK = True  # pragma: no cover
 except ImportError:
     _HAS_OPENSTACK = False
-    openstack = None  # type: ignore[assignment]
+    openstack = None
 
 
 def _require_openstack() -> None:
@@ -65,9 +65,9 @@ class OpenStackConnector(ProviderConnector):
     def _build_connection(self, ctx: ConnectorContext) -> Any:
         """Create an ``openstack.Connection`` from user credentials."""
         _require_openstack()
-        creds = ctx.credentials
-        cfg = ctx.config
-        return openstack.connect(
+        creds = ctx.credentials  # pragma: no cover
+        cfg = ctx.config  # pragma: no cover
+        return openstack.connect(  # pragma: no cover
             auth_url=creds.get("auth_url", ""),
             project_id=creds.get("project_id", ""),
             username=creds.get("username", ""),

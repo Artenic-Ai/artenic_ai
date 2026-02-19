@@ -429,7 +429,8 @@ class ProviderService:
                 rec.id,
             )
             return {}
-        return json.loads(plaintext)
+        result: dict[str, str] = json.loads(plaintext)
+        return result
 
     def _make_ctx(self, rec: ProviderRecord) -> ConnectorContext:
         """Build a ConnectorContext from a ProviderRecord."""

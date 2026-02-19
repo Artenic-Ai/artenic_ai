@@ -539,3 +539,54 @@ class TestGetLineage:
     async def test_get_lineage_nonexistent_dataset(self, client: AsyncClient) -> None:
         resp = await client.get(f"{BASE}/nonexistent/lineage")
         assert resp.status_code == 404
+
+
+# ======================================================================
+# GET /api/v1/datasets/storage-options — continue branch (line 138)
+# ======================================================================
+
+
+class TestStorageOptionsContinueBranch:
+    async def test_compute_only_provider_is_skipped(
+        self, client: AsyncClient
+    ) -> None:
+        """A catalog provider with only compute capability is skipped."""
+        from unittest.mock import patch
+
+        from artenic_ai_platform.providers_hub.catalog import (
+            ProviderCapability,
+            ProviderDefinition,
+        )
+
+        fake_provider = ProviderDefinition(
+            id="fake-compute",
+            display_name="Fake Compute Cloud",
+            description="Compute only, no storage",
+            website="https://example.com",
+            connector_type="openstack",
+            capabilities=(
+                ProviderCapability(
+                    type="compute",
+                    name="GPU Instances",
+                    description="GPU compute only",
+                ),
+            ),
+            credential_fields=(),
+            config_fields=(),
+        )
+
+        from artenic_ai_platform.providers_hub.catalog import PROVIDER_CATALOG
+
+        patched_catalog = {**PROVIDER_CATALOG, "fake-compute": fake_provider}
+
+        with patch(
+            "artenic_ai_platform.providers_hub.catalog.PROVIDER_CATALOG", patched_catalog
+        ):
+            resp = await client.get(f"{BASE}/storage-options")
+
+        assert resp.status_code == 200
+        data = resp.json()
+        ids = [opt["id"] for opt in data]
+        # OVH (has storage) should appear; fake-compute (compute only) should not
+        assert "ovh" in ids
+        assert "fake-compute" not in ids

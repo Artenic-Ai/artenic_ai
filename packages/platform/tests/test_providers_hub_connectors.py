@@ -6,6 +6,8 @@ from dataclasses import dataclass
 from typing import Any
 from unittest.mock import MagicMock, patch
 
+import pytest
+
 from artenic_ai_platform.providers_hub.connectors.base import ConnectorContext
 from artenic_ai_platform.providers_hub.connectors.openstack import (
     OpenStackConnector,
@@ -301,3 +303,28 @@ class TestCatalog:
         from artenic_ai_platform.providers_hub.catalog import get_provider_definition
 
         assert get_provider_definition("nonexistent") is None
+
+
+# ======================================================================
+# _require_openstack — lines 42-47
+# ======================================================================
+
+
+class TestRequireOpenstack:
+    def test_raises_import_error(self) -> None:
+        from artenic_ai_platform.providers_hub.connectors.openstack import _require_openstack
+
+        with pytest.raises(ImportError, match="openstacksdk"):
+            _require_openstack()
+
+
+# ======================================================================
+# _build_connection calls _require_openstack — line 67
+# ======================================================================
+
+
+class TestBuildConnectionRequiresOpenstack:
+    def test_raises_import_error(self) -> None:
+        connector = OpenStackConnector(provider_id="ovh")
+        with pytest.raises(ImportError, match="openstacksdk"):
+            connector._build_connection(CTX)
