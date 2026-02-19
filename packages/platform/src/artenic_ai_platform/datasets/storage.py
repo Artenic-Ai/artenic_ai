@@ -105,11 +105,7 @@ class FilesystemStorage(StorageBackend):
         if not base.exists():
             return []
         root = self._base
-        return sorted(
-            str(p.relative_to(root))
-            for p in base.rglob("*")
-            if p.is_file()
-        )
+        return sorted(str(p.relative_to(root)) for p in base.rglob("*") if p.is_file())
 
 
 # ======================================================================

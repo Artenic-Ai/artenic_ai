@@ -139,12 +139,15 @@ class TestUpdate:
 
     async def test_update_modifies_allowed_fields(self, svc: DatasetService) -> None:
         ds_id = await svc.create(_ds_meta())
-        updated = await svc.update(ds_id, {
-            "name": "renamed",
-            "description": "new desc",
-            "tags": {"updated": "yes"},
-            "source": "new-source",
-        })
+        updated = await svc.update(
+            ds_id,
+            {
+                "name": "renamed",
+                "description": "new desc",
+                "tags": {"updated": "yes"},
+                "source": "new-source",
+            },
+        )
         assert updated.name == "renamed"
         assert updated.description == "new desc"
         assert updated.tags == {"updated": "yes"}
@@ -152,10 +155,13 @@ class TestUpdate:
 
     async def test_update_ignores_disallowed_fields(self, svc: DatasetService) -> None:
         ds_id = await svc.create(_ds_meta())
-        updated = await svc.update(ds_id, {
-            "name": "ok",
-            "format": "should-be-ignored",
-        })
+        updated = await svc.update(
+            ds_id,
+            {
+                "name": "ok",
+                "format": "should-be-ignored",
+            },
+        )
         assert updated.name == "ok"
         assert updated.format == "csv"  # unchanged
 
@@ -217,9 +223,7 @@ class TestUploadFile:
         assert dataset.total_files == 2
         assert dataset.total_size_bytes == len(data) + len(data2)
 
-    async def test_upload_to_non_existent_dataset_raises(
-        self, svc: DatasetService
-    ) -> None:
+    async def test_upload_to_non_existent_dataset_raises(self, svc: DatasetService) -> None:
         with pytest.raises(ValueError, match="Dataset not found"):
             await svc.upload_file("nonexistent", "f.csv", b"data")
 
@@ -273,9 +277,7 @@ class TestDownloadFile:
 class TestDeleteFile:
     """DatasetService.delete_file()."""
 
-    async def test_delete_file_removes_record_and_storage(
-        self, svc: DatasetService
-    ) -> None:
+    async def test_delete_file_removes_record_and_storage(self, svc: DatasetService) -> None:
         ds_id = await svc.create(_ds_meta())
         await svc.upload_file(ds_id, "deleteme.csv", b"data")
         await svc.delete_file(ds_id, "deleteme.csv")
@@ -301,9 +303,7 @@ class TestDeleteFile:
 class TestCreateVersion:
     """DatasetService.create_version()."""
 
-    async def test_create_version_increments_version(
-        self, svc: DatasetService
-    ) -> None:
+    async def test_create_version_increments_version(self, svc: DatasetService) -> None:
         ds_id = await svc.create(_ds_meta())
         await svc.upload_file(ds_id, "data.csv", b"col\n1")
         v = await svc.create_version(ds_id, "initial")
@@ -321,9 +321,7 @@ class TestCreateVersion:
         assert len(v.hash) == 64
         assert v.num_files == 2
 
-    async def test_create_version_on_non_existent_raises(
-        self, svc: DatasetService
-    ) -> None:
+    async def test_create_version_on_non_existent_raises(self, svc: DatasetService) -> None:
         with pytest.raises(ValueError, match="Dataset not found"):
             await svc.create_version("nonexistent")
 
@@ -364,9 +362,7 @@ class TestGetVersion:
         assert v is not None
         assert v.version == 1
 
-    async def test_get_version_returns_none_for_missing(
-        self, svc: DatasetService
-    ) -> None:
+    async def test_get_version_returns_none_for_missing(self, svc: DatasetService) -> None:
         ds_id = await svc.create(_ds_meta())
         v = await svc.get_version(ds_id, 999)
         assert v is None
@@ -390,9 +386,7 @@ class TestComputeStats:
         assert stats["total_files"] == 1
         assert stats["format_breakdown"]["csv"] == 1
 
-    async def test_compute_stats_csv_counts_records(
-        self, svc: DatasetService
-    ) -> None:
+    async def test_compute_stats_csv_counts_records(self, svc: DatasetService) -> None:
         ds_id = await svc.create(_ds_meta(fmt="csv"))
         csv_data = b"name,age\nalice,30\nbob,25\n"
         await svc.upload_file(ds_id, "people.csv", csv_data)
@@ -400,18 +394,14 @@ class TestComputeStats:
         # 3 lines minus 1 header = 2 records
         assert stats["num_records"] == 2
 
-    async def test_compute_stats_json_counts_records(
-        self, svc: DatasetService
-    ) -> None:
+    async def test_compute_stats_json_counts_records(self, svc: DatasetService) -> None:
         ds_id = await svc.create(_ds_meta(fmt="json"))
         json_data = json.dumps([{"a": 1}, {"a": 2}, {"a": 3}]).encode()
         await svc.upload_file(ds_id, "data.json", json_data)
         stats = await svc.compute_stats(ds_id)
         assert stats["num_records"] == 3
 
-    async def test_compute_stats_non_existent_raises(
-        self, svc: DatasetService
-    ) -> None:
+    async def test_compute_stats_non_existent_raises(self, svc: DatasetService) -> None:
         with pytest.raises(ValueError, match="Dataset not found"):
             await svc.compute_stats("nonexistent")
 
@@ -452,9 +442,7 @@ class TestPreview:
         assert len(result["rows"]) == 3
         assert result["total_rows"] == 3
 
-    async def test_preview_non_tabular_returns_empty(
-        self, svc: DatasetService
-    ) -> None:
+    async def test_preview_non_tabular_returns_empty(self, svc: DatasetService) -> None:
         ds_id = await svc.create(_ds_meta(fmt="png"))
         await svc.upload_file(ds_id, "image.png", b"\x89PNG\r\n")
         result = await svc.preview(ds_id)
@@ -491,9 +479,7 @@ class TestAddLineage:
         assert record.entity_id == "model-abc"
         assert record.role == "input"
 
-    async def test_add_lineage_non_existent_dataset_raises(
-        self, svc: DatasetService
-    ) -> None:
+    async def test_add_lineage_non_existent_dataset_raises(self, svc: DatasetService) -> None:
         with pytest.raises(ValueError, match="Dataset not found"):
             await svc.add_lineage("nonexistent", 1, "model", "m1")
 
@@ -516,3 +502,130 @@ class TestGetLineage:
         ds_id = await svc.create(_ds_meta())
         records = await svc.get_lineage(ds_id)
         assert records == []
+
+
+# ======================================================================
+# Edge cases — stats / preview / _count_records / _parse_preview
+# ======================================================================
+
+
+class TestCountRecordsInBytes:
+    """DatasetService._count_records_in_bytes() — static method coverage."""
+
+    def test_csv_counts_minus_header(self) -> None:
+        data = b"h\na\nb\n"
+        assert DatasetService._count_records_in_bytes(data, "csv") == 2
+
+    def test_json_array(self) -> None:
+        data = json.dumps([1, 2, 3]).encode()
+        assert DatasetService._count_records_in_bytes(data, "json") == 3
+
+    def test_json_object_treated_as_jsonl(self) -> None:
+        # A JSON object (not array) is treated as single JSONL line
+        data = json.dumps({"key": "value"}).encode()
+        assert DatasetService._count_records_in_bytes(data, "json") == 1
+
+    def test_jsonl_counts_lines(self) -> None:
+        data = b'{"a":1}\n{"a":2}\n'
+        assert DatasetService._count_records_in_bytes(data, "jsonl") == 2
+
+    def test_empty_json_returns_zero(self) -> None:
+        assert DatasetService._count_records_in_bytes(b"", "json") == 0
+
+    def test_unsupported_format_returns_none(self) -> None:
+        assert DatasetService._count_records_in_bytes(b"data", "parquet") is None
+
+
+class TestParsePreview:
+    """DatasetService._parse_preview() — static method coverage."""
+
+    def test_csv_with_truncation(self) -> None:
+        data = b"col\na\nb\nc\nd\n"
+        result = DatasetService._parse_preview(data, "csv", limit=2)
+        assert len(result["rows"]) == 2
+        assert result["truncated"] is True
+        assert result["total_rows"] == 4
+
+    def test_json_empty_array(self) -> None:
+        data = json.dumps([]).encode()
+        result = DatasetService._parse_preview(data, "json", limit=10)
+        assert result["rows"] == []
+        assert result["columns"] == []
+
+    def test_json_object_treated_as_jsonl_preview(self) -> None:
+        # A JSON object (not array) falls into JSONL parsing
+        data = json.dumps({"key": "val"}).encode()
+        result = DatasetService._parse_preview(data, "json", limit=10)
+        assert len(result["rows"]) == 1
+        assert result["rows"][0]["key"] == "val"
+
+    def test_json_array_preview(self) -> None:
+        data = json.dumps([{"x": 1}, {"x": 2}, {"x": 3}]).encode()
+        result = DatasetService._parse_preview(data, "json", limit=50)
+        assert result["columns"] == ["x"]
+        assert len(result["rows"]) == 3
+        assert result["truncated"] is False
+
+    def test_jsonl_preview(self) -> None:
+        data = b'{"a":1}\n{"a":2}\n'
+        result = DatasetService._parse_preview(data, "jsonl", limit=50)
+        assert result["columns"] == ["a"]
+        assert len(result["rows"]) == 2
+
+    def test_unsupported_format_returns_empty(self) -> None:
+        result = DatasetService._parse_preview(b"binary data", "parquet", limit=50)
+        assert result["columns"] == []
+        assert result["rows"] == []
+
+
+class TestStatsSchemaInfo:
+    """compute_stats() includes schema_info when set."""
+
+    async def test_stats_includes_schema_info(self, svc: DatasetService) -> None:
+        ds_id = await svc.create(_ds_meta(fmt="csv"))
+        # Manually set schema_info on the record
+        record = await svc.get(ds_id)
+        assert record is not None
+        record.schema_info = {"columns": [{"name": "age", "dtype": "int", "nullable": False}]}
+        await svc._session.commit()
+        stats = await svc.compute_stats(ds_id)
+        assert "schema_info" in stats
+        assert stats["schema_info"]["columns"][0]["name"] == "age"
+
+
+class TestCountTabularEdgeCases:
+    """_count_tabular_records edge cases: large files, missing files."""
+
+    async def test_skips_oversized_files(self, svc: DatasetService) -> None:
+        ds_id = await svc.create(_ds_meta(fmt="csv"))
+        await svc.upload_file(ds_id, "big.csv", b"h\na\n")
+        # Patch file record to fake a large size
+        files = await svc.list_files(ds_id)
+        files[0].size_bytes = 200 * 1024 * 1024  # 200 MB (over 100 MB limit)
+        await svc._session.commit()
+        result = await svc._count_tabular_records(ds_id, "csv")
+        assert result is None  # Skipped because file too large
+
+    async def test_handles_missing_storage_file(self, svc: DatasetService) -> None:
+        ds_id = await svc.create(_ds_meta(fmt="csv"))
+        await svc.upload_file(ds_id, "data.csv", b"h\na\n")
+        # Delete from storage but keep DB record
+        files = await svc.list_files(ds_id)
+        await svc._storage.delete(files[0].storage_path)
+        # Should not raise — error is caught and skipped
+        result = await svc._count_tabular_records(ds_id, "csv")
+        assert result is None
+
+
+class TestPreviewOversizedFile:
+    """preview() returns empty for oversized first file."""
+
+    async def test_preview_oversized_file(self, svc: DatasetService) -> None:
+        ds_id = await svc.create(_ds_meta(fmt="csv"))
+        await svc.upload_file(ds_id, "big.csv", b"h\na\n")
+        files = await svc.list_files(ds_id)
+        files[0].size_bytes = 200 * 1024 * 1024
+        await svc._session.commit()
+        result = await svc.preview(ds_id)
+        assert result["columns"] == []
+        assert result["rows"] == []

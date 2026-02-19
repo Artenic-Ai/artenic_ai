@@ -155,9 +155,7 @@ async def create_dataset(body: CreateDatasetRequest, svc: Svc) -> CreateDatasetR
 
 
 @router.get("")
-async def list_datasets(
-    svc: Svc, offset: int = 0, limit: int = 100
-) -> list[dict[str, Any]]:
+async def list_datasets(svc: Svc, offset: int = 0, limit: int = 100) -> list[dict[str, Any]]:
     """List datasets with pagination."""
     records = await svc.list_all(offset=offset, limit=limit)
     return [_dataset_to_dict(r) for r in records]
@@ -173,9 +171,7 @@ async def get_dataset(dataset_id: str, svc: Svc) -> dict[str, Any]:
 
 
 @router.patch("/{dataset_id}")
-async def update_dataset(
-    dataset_id: str, body: UpdateDatasetRequest, svc: Svc
-) -> dict[str, Any]:
+async def update_dataset(dataset_id: str, body: UpdateDatasetRequest, svc: Svc) -> dict[str, Any]:
     """Update dataset metadata."""
     updates = {k: v for k, v in body.model_dump().items() if v is not None}
     try:
@@ -285,9 +281,7 @@ async def delete_file_endpoint(dataset_id: str, filename: str, svc: Svc) -> None
 
 
 @router.post("/{dataset_id}/versions", status_code=201)
-async def create_version(
-    dataset_id: str, body: CreateVersionRequest, svc: Svc
-) -> dict[str, Any]:
+async def create_version(dataset_id: str, body: CreateVersionRequest, svc: Svc) -> dict[str, Any]:
     """Create a new version snapshot."""
     try:
         record = await svc.create_version(dataset_id, body.change_summary)
@@ -342,9 +336,7 @@ async def get_stats(dataset_id: str, svc: Svc) -> dict[str, Any]:
 
 
 @router.get("/{dataset_id}/preview")
-async def get_preview(
-    dataset_id: str, svc: Svc, limit: int = 50
-) -> dict[str, Any]:
+async def get_preview(dataset_id: str, svc: Svc, limit: int = 50) -> dict[str, Any]:
     """Return first N rows for tabular datasets."""
     try:
         return await svc.preview(dataset_id, limit=limit)
@@ -378,14 +370,15 @@ async def get_lineage(dataset_id: str, svc: Svc) -> list[dict[str, Any]]:
 
 
 @router.post("/{dataset_id}/lineage", status_code=201)
-async def add_lineage(
-    dataset_id: str, body: AddLineageRequest, svc: Svc
-) -> dict[str, Any]:
+async def add_lineage(dataset_id: str, body: AddLineageRequest, svc: Svc) -> dict[str, Any]:
     """Add a lineage record linking dataset to model or training job."""
     try:
         record = await svc.add_lineage(
-            dataset_id, body.dataset_version, body.entity_type,
-            body.entity_id, body.role,
+            dataset_id,
+            body.dataset_version,
+            body.entity_type,
+            body.entity_id,
+            body.role,
         )
     except ValueError:
         raise HTTPException(status_code=404, detail="Dataset not found") from None

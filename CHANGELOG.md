@@ -30,13 +30,26 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - React Query hooks (`useDatasets`, `useDatasetFiles`, `useDatasetVersions`, `useDatasetStats`, `useDatasetPreview`, `useDatasetLineage`)
 - Mock data: 5 demo datasets (imagenet-mini, customer-churn, financial-ticks, nlp-reviews, audio-commands)
 
+#### Security Audit
+- Path traversal protection in `FilesystemStorage._resolve()` with `is_relative_to()` check
+- Filename sanitization (`_sanitize_filename`) strips path components and unsafe characters
+- Upload size limit enforcement from `settings.dataset.max_upload_size_mb`
+- File extension allowlist from `settings.dataset.allowed_extensions`
+- ON DELETE CASCADE on all dataset FK relationships
+- Input validation: name length/blank, format, description limits via Pydantic `Field` validators
+- Dataset existence checks on list-files, list-versions, get-lineage endpoints
+- Pagination on list endpoints (offset/limit with max 1000)
+- Size guards: stats/preview skip files > 100 MB, preview limit capped at 500
+- Consistent JSON error responses via `HTTPException` (no raw `Response`)
+- Validation error handler: sanitize non-serializable `ctx` values
+
 #### Quality
-- Platform: 1520 tests (114 new dataset tests)
-- CLI: 191 tests (32 new dataset tests)
+- Platform: 1548 tests (142 dataset tests), 100% coverage
+- CLI: 198 tests (32 dataset commands + 7 client methods), 100% coverage
 - Dashboard: 68 tests, build clean
-- mypy strict — 0 errors across 76 source files
-- ruff lint — clean
-- SDK: 614 tests, 100% coverage (2 tests added for distributed validation)
+- mypy strict — 0 errors across SDK (26), Platform (76), CLI (18) source files
+- ruff lint + format — clean
+- SDK: 614 tests, 100% coverage
 
 ## [0.4.0] — 2026-02-18
 

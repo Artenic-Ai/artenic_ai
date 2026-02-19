@@ -217,3 +217,81 @@ class TestApiClient:
 
         with pytest.raises(PlatformError, match="Invalid JSON"):
             run_async(_test())
+
+    def test_patch(self) -> None:
+        async def _test() -> object:
+            api = ApiClient("http://test:9000")
+            async with api:
+                api._client = AsyncMock()  # type: ignore[assignment]
+                api._client.request = AsyncMock(
+                    return_value=_mock_response(json_data={"patched": True})
+                )
+                return await api.patch("/api/v1/models/1", json={"name": "n"})
+
+        assert run_async(_test()) == {"patched": True}
+
+    def test_upload_file(self) -> None:
+        async def _test() -> object:
+            api = ApiClient("http://test:9000")
+            async with api:
+                api._client = AsyncMock()  # type: ignore[assignment]
+                api._client.post = AsyncMock(
+                    return_value=_mock_response(json_data={"filename": "f.csv"})
+                )
+                return await api.upload_file("/upload", "f.csv", b"data", "text/csv")
+
+        assert run_async(_test()) == {"filename": "f.csv"}
+
+    def test_upload_file_error(self) -> None:
+        async def _test() -> None:
+            api = ApiClient("http://test:9000")
+            async with api:
+                api._client = AsyncMock()  # type: ignore[assignment]
+                api._client.post = AsyncMock(
+                    return_value=_mock_response(status_code=413, text="Too large")
+                )
+                await api.upload_file("/upload", "f.csv", b"data", "text/csv")
+
+        with pytest.raises(PlatformError, match="413"):
+            run_async(_test())
+
+    def test_upload_file_not_initialized(self) -> None:
+        async def _test() -> None:
+            api = ApiClient("http://test:9000")
+            await api.upload_file("/upload", "f.csv", b"data", "text/csv")
+
+        with pytest.raises(PlatformError, match="not initialized"):
+            run_async(_test())
+
+    def test_download_bytes(self) -> None:
+        async def _test() -> bytes:
+            api = ApiClient("http://test:9000")
+            async with api:
+                api._client = AsyncMock()  # type: ignore[assignment]
+                resp = _mock_response(status_code=200)
+                resp.content = b"file content"
+                api._client.get = AsyncMock(return_value=resp)
+                return await api.download_bytes("/download/file.csv")
+
+        assert run_async(_test()) == b"file content"
+
+    def test_download_bytes_error(self) -> None:
+        async def _test() -> None:
+            api = ApiClient("http://test:9000")
+            async with api:
+                api._client = AsyncMock()  # type: ignore[assignment]
+                api._client.get = AsyncMock(
+                    return_value=_mock_response(status_code=404, text="Not found")
+                )
+                await api.download_bytes("/download/missing.csv")
+
+        with pytest.raises(PlatformError, match="404"):
+            run_async(_test())
+
+    def test_download_bytes_not_initialized(self) -> None:
+        async def _test() -> None:
+            api = ApiClient("http://test:9000")
+            await api.download_bytes("/download/file.csv")
+
+        with pytest.raises(PlatformError, match="not initialized"):
+            run_async(_test())

@@ -80,9 +80,7 @@ class DatasetService:
         )
         return result.scalar_one_or_none()
 
-    async def list_all(
-        self, *, offset: int = 0, limit: int = 100
-    ) -> list[DatasetRecord]:
+    async def list_all(self, *, offset: int = 0, limit: int = 100) -> list[DatasetRecord]:
         """List datasets, ordered by creation date descending."""
         limit = min(max(limit, 1), 1000)
         offset = max(offset, 0)
@@ -94,9 +92,7 @@ class DatasetService:
         )
         return list(result.scalars().all())
 
-    async def update(
-        self, dataset_id: str, updates: dict[str, Any]
-    ) -> DatasetRecord:
+    async def update(self, dataset_id: str, updates: dict[str, Any]) -> DatasetRecord:
         """Update metadata fields on a dataset."""
         record = await self.get(dataset_id)
         if record is None:
@@ -124,19 +120,13 @@ class DatasetService:
 
         # Delete DB records in order (lineage → files → versions → dataset)
         await self._session.execute(
-            delete(DatasetLineageRecord).where(
-                DatasetLineageRecord.dataset_id == dataset_id
-            )
+            delete(DatasetLineageRecord).where(DatasetLineageRecord.dataset_id == dataset_id)
         )
         await self._session.execute(
-            delete(DatasetFileRecord).where(
-                DatasetFileRecord.dataset_id == dataset_id
-            )
+            delete(DatasetFileRecord).where(DatasetFileRecord.dataset_id == dataset_id)
         )
         await self._session.execute(
-            delete(DatasetVersionRecord).where(
-                DatasetVersionRecord.dataset_id == dataset_id
-            )
+            delete(DatasetVersionRecord).where(DatasetVersionRecord.dataset_id == dataset_id)
         )
         await self._session.delete(record)
         await self._session.commit()
@@ -146,9 +136,7 @@ class DatasetService:
     # Files
     # ------------------------------------------------------------------
 
-    async def upload_file(
-        self, dataset_id: str, filename: str, data: bytes
-    ) -> DatasetFileRecord:
+    async def upload_file(self, dataset_id: str, filename: str, data: bytes) -> DatasetFileRecord:
         """Upload a file to a dataset."""
         record = await self.get(dataset_id)
         if record is None:
@@ -197,9 +185,7 @@ class DatasetService:
         self, dataset_id: str, *, version: int | None = None
     ) -> list[DatasetFileRecord]:
         """List files in a dataset, optionally filtered by version."""
-        stmt = select(DatasetFileRecord).where(
-            DatasetFileRecord.dataset_id == dataset_id
-        )
+        stmt = select(DatasetFileRecord).where(DatasetFileRecord.dataset_id == dataset_id)
         if version is not None:
             stmt = stmt.where(DatasetFileRecord.version <= version)
         stmt = stmt.order_by(DatasetFileRecord.filename)
@@ -300,9 +286,7 @@ class DatasetService:
         )
         return list(result.scalars().all())
 
-    async def get_version(
-        self, dataset_id: str, version: int
-    ) -> DatasetVersionRecord | None:
+    async def get_version(self, dataset_id: str, version: int) -> DatasetVersionRecord | None:
         """Get a specific version of a dataset."""
         result = await self._session.execute(
             select(DatasetVersionRecord).where(
@@ -346,9 +330,7 @@ class DatasetService:
 
         return stats
 
-    async def _count_tabular_records(
-        self, dataset_id: str, fmt: str
-    ) -> int | None:
+    async def _count_tabular_records(self, dataset_id: str, fmt: str) -> int | None:
         """Count records across tabular files in a dataset."""
         files = await self.list_files(dataset_id)
         total = 0
@@ -382,9 +364,7 @@ class DatasetService:
             return sum(1 for line in text.splitlines() if line.strip())
         return None
 
-    async def preview(
-        self, dataset_id: str, *, limit: int = 50
-    ) -> dict[str, Any]:
+    async def preview(self, dataset_id: str, *, limit: int = 50) -> dict[str, Any]:
         """Return the first *limit* rows for tabular datasets."""
         limit = min(max(limit, 1), _MAX_PREVIEW_LIMIT)
 
@@ -413,9 +393,7 @@ class DatasetService:
         return self._parse_preview(data, dataset.format, limit)
 
     @staticmethod
-    def _parse_preview(
-        data: bytes, fmt: str, limit: int
-    ) -> dict[str, Any]:
+    def _parse_preview(data: bytes, fmt: str, limit: int) -> dict[str, Any]:
         """Parse preview rows from raw bytes."""
         text = data.decode("utf-8", errors="replace")
 

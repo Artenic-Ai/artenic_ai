@@ -91,6 +91,26 @@ class TestStorageOptions:
         fs = next(o for o in data if o["id"] == "filesystem")
         assert fs["available"] is True
 
+    async def test_returns_configured_provider_as_available(self, tmp_path: Path) -> None:
+        """When AWS is configured, s3 shows as available."""
+        settings = PlatformSettings(
+            database_url="sqlite+aiosqlite://",
+            api_key="",
+            secret_key="test-secret",
+            otel_enabled=False,
+            dataset={"storage": {"local_dir": str(tmp_path / "ds")}},
+            aws={"enabled": True},
+        )
+        app = create_app(settings)
+        async with _lifespan(app):
+            transport = ASGITransport(app=app)
+            async with AsyncClient(transport=transport, base_url="http://test") as c:
+                resp = await c.get(f"{BASE}/storage-options")
+                assert resp.status_code == 200
+                data = resp.json()
+                s3 = next(o for o in data if o["id"] == "s3")
+                assert s3["available"] is True
+
 
 # ======================================================================
 # POST /api/v1/datasets
@@ -107,6 +127,10 @@ class TestCreateDataset:
 
     async def test_create_validation_error(self, client: AsyncClient) -> None:
         resp = await client.post(BASE, json={})
+        assert resp.status_code == 422
+
+    async def test_create_blank_name_rejected(self, client: AsyncClient) -> None:
+        resp = await client.post(BASE, json=_create_body(name="   "))
         assert resp.status_code == 422
 
 
@@ -231,6 +255,29 @@ class TestUploadFile:
         # Filename should be sanitized (no path components)
         assert "/" not in data["filename"]
         assert ".." not in data["filename"]
+
+    async def test_upload_exceeds_max_size(self, tmp_path: Path) -> None:
+        """Upload a file exceeding max_upload_size_mb returns 413."""
+        settings = PlatformSettings(
+            database_url="sqlite+aiosqlite://",
+            api_key="",
+            secret_key="test-secret",
+            otel_enabled=False,
+            dataset={
+                "storage": {"local_dir": str(tmp_path / "ds")},
+                "max_upload_size_mb": 0,  # 0 MB = reject everything
+            },
+        )
+        app = create_app(settings)
+        async with _lifespan(app):
+            transport = ASGITransport(app=app)
+            async with AsyncClient(transport=transport, base_url="http://test") as c:
+                ds_id = await _create_dataset(c)
+                resp = await c.post(
+                    f"{BASE}/{ds_id}/files",
+                    files={"file": ("data.csv", b"x", "text/csv")},
+                )
+                assert resp.status_code == 413
 
 
 # ======================================================================

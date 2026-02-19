@@ -199,12 +199,19 @@ async def handle_validation_error(
 ) -> JSONResponse:
     """Handle Pydantic / FastAPI request validation errors."""
     assert isinstance(exc, RequestValidationError)
+    # Sanitize errors: ctx may contain non-serializable objects (e.g. ValueError)
+    safe_errors = []
+    for err in exc.errors():
+        safe = {k: v for k, v in err.items() if k != "ctx"}
+        if "ctx" in err:
+            safe["ctx"] = {k: str(v) for k, v in err["ctx"].items()}
+        safe_errors.append(safe)
     return JSONResponse(
         status_code=422,
         content=_error_body(
             "VALIDATION_ERROR",
             "Request validation failed.",
-            {"errors": exc.errors()},
+            {"errors": safe_errors},
         ),
     )
 

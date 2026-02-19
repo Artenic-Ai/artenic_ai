@@ -129,9 +129,19 @@ class DatasetConfig(BaseModel):
     max_upload_size_mb: int = 500
     allowed_extensions: list[str] = Field(
         default_factory=lambda: [
-            "csv", "parquet", "json", "jsonl",
-            "png", "jpg", "jpeg", "wav", "mp3",
-            "txt", "tsv", "feather", "arrow",
+            "csv",
+            "parquet",
+            "json",
+            "jsonl",
+            "png",
+            "jpg",
+            "jpeg",
+            "wav",
+            "mp3",
+            "txt",
+            "tsv",
+            "feather",
+            "arrow",
         ],
     )
 

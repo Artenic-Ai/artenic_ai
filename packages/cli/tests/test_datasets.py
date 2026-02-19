@@ -162,9 +162,7 @@ class TestDatasetDownload:
         with patch("artenic_ai_cli.commands.datasets._async.run_async") as mock_run:
             mock_run.return_value = b"col1,col2\n1,2\n"
             dest = tmp_path / "out.csv"
-            result = runner.invoke(
-                cli, ["dataset", "download", "ds1", "data.csv", "-o", str(dest)]
-            )
+            result = runner.invoke(cli, ["dataset", "download", "ds1", "data.csv", "-o", str(dest)])
             assert result.exit_code == 0
             assert dest.read_bytes() == b"col1,col2\n1,2\n"
 
@@ -209,9 +207,7 @@ class TestDatasetFiles:
 
 class TestDatasetStats:
     def test_stats(self, runner: CliRunner, patch_run_async: Any) -> None:
-        with patch_run_async(
-            return_value={"rows": 150, "columns": 5, "size_bytes": 4096}
-        ):
+        with patch_run_async(return_value={"rows": 150, "columns": 5, "size_bytes": 4096}):
             result = runner.invoke(cli, ["dataset", "stats", "ds1"])
             assert result.exit_code == 0
             assert "150" in result.output

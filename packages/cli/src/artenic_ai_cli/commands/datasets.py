@@ -193,9 +193,7 @@ def download_file(
 
     async def _run() -> bytes:
         async with ctx.api as api:
-            return await api.download_bytes(
-                f"/api/v1/datasets/{dataset_id}/files/{filename}"
-            )
+            return await api.download_bytes(f"/api/v1/datasets/{dataset_id}/files/{filename}")
 
     content = _async.run_async(_run())
     dest = Path(output) if output else Path(filename)

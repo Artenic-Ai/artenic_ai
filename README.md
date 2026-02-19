@@ -65,8 +65,8 @@ artenic_ai/
 | Package | Description | Status | Tests | Coverage |
 |---------|-------------|--------|-------|----------|
 | `sdk` | BaseModel contract, schemas, ensemble, serialization, decorators | **Complete** | 614 | 100% |
-| `platform` | FastAPI gateway, registry, training, datasets, 16 providers | **Complete** | 1520 | 100% |
-| `cli` | Command-line interface — 11 command groups, 50+ subcommands | **Complete** | 191 | 100% |
+| `platform` | FastAPI gateway, registry, training, datasets, 16 providers | **Complete** | 1548 | 100% |
+| `cli` | Command-line interface — 11 command groups, 50+ subcommands | **Complete** | 198 | 100% |
 | `optimizer` | LTR-based training instance selection | Stub | — | — |
 | `dashboard` | React admin UI — 10 pages, dark theme, demo mode | **Complete** | 68 | — |
 
@@ -257,6 +257,22 @@ The platform exposes the following API:
 | `POST` | `/api/v1/budgets` | Create budget rule |
 | `GET` | `/api/v1/budgets/spending` | Current spending |
 | `GET/PUT` | `/api/v1/settings/{scope}/{section}` | Runtime settings |
+| `GET` | `/api/v1/datasets/storage-options` | Available storage backends |
+| `POST` | `/api/v1/datasets` | Create dataset |
+| `GET` | `/api/v1/datasets` | List datasets |
+| `GET` | `/api/v1/datasets/{id}` | Dataset details |
+| `PATCH` | `/api/v1/datasets/{id}` | Update metadata |
+| `DELETE` | `/api/v1/datasets/{id}` | Delete dataset |
+| `POST` | `/api/v1/datasets/{id}/files` | Upload file (multipart) |
+| `GET` | `/api/v1/datasets/{id}/files` | List files |
+| `GET` | `/api/v1/datasets/{id}/files/{name}` | Download file |
+| `DELETE` | `/api/v1/datasets/{id}/files/{name}` | Delete file |
+| `POST` | `/api/v1/datasets/{id}/versions` | Create version snapshot |
+| `GET` | `/api/v1/datasets/{id}/versions` | List versions |
+| `GET` | `/api/v1/datasets/{id}/stats` | Auto-computed statistics |
+| `GET` | `/api/v1/datasets/{id}/preview` | Preview tabular data |
+| `POST` | `/api/v1/datasets/{id}/lineage` | Add lineage link |
+| `GET` | `/api/v1/datasets/{id}/lineage` | Get lineage |
 | `WS` | `/ws` | Real-time event stream |
 
 ## Contributing

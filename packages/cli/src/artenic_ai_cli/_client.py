@@ -68,15 +68,11 @@ class ApiClient:
         """HTTP DELETE."""
         return await self._request("DELETE", path)
 
-    async def upload_file(
-        self, path: str, filename: str, data: bytes, mime_type: str
-    ) -> Any:
+    async def upload_file(self, path: str, filename: str, data: bytes, mime_type: str) -> Any:
         """Upload a file via multipart/form-data."""
         if not self._client:
             raise PlatformError("Client not initialized. Use 'async with' context.")
-        response = await self._client.post(
-            path, files={"file": (filename, data, mime_type)}
-        )
+        response = await self._client.post(path, files={"file": (filename, data, mime_type)})
         if response.status_code >= 400:
             raise PlatformError(f"Platform error {response.status_code}: {response.text}")
         return response.json()
