@@ -32,10 +32,11 @@ COPY --from=builder /app/dist /usr/share/nginx/html
 # Copy nginx configuration
 COPY dashboard/nginx.conf /etc/nginx/conf.d/default.conf
 
-# Prepare cache dirs and run as non-root user
-RUN chown -R nginx:nginx /usr/share/nginx/html \
-    && mkdir -p /var/cache/nginx /var/run \
-    && chown -R nginx:nginx /var/cache/nginx /var/run
+# Prepare dirs for non-root nginx: pid in /tmp, cache + logs writable
+RUN sed -i 's|/run/nginx.pid|/tmp/nginx.pid|' /etc/nginx/nginx.conf \
+    && chown -R nginx:nginx /usr/share/nginx/html \
+    && mkdir -p /var/cache/nginx \
+    && chown -R nginx:nginx /var/cache/nginx /var/log/nginx
 USER nginx
 
 EXPOSE 80
