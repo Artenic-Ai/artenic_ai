@@ -97,7 +97,7 @@ class OVHProvider(CloudProvider):
     project_id:
         OVH Public Cloud project ID (also used for API pricing calls).
     region:
-        OVH region code (default ``GRA``).
+        OVH region code (default ``GRA11``).
     flavor:
         Default Nova flavor name for compute instances.
     network_id:
@@ -114,7 +114,7 @@ class OVHProvider(CloudProvider):
         username: str,
         password: str,
         project_id: str,
-        region: str = "GRA",
+        region: str = "GRA11",
         flavor: str | None = None,
         network_id: str | None = None,
         image_id: str | None = None,

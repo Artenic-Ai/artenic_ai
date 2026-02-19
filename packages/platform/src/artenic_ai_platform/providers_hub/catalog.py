@@ -124,7 +124,7 @@ PROVIDER_CATALOG: dict[str, ProviderDefinition] = {
                 default="https://auth.cloud.ovh.net/v3",
                 description="OpenStack Identity endpoint",
             ),
-            ConfigField("region", "Default Region", default="GRA"),
+            ConfigField("region", "Default Region", default="GRA11"),
             ConfigField(
                 "user_domain_name",
                 "User Domain Name",

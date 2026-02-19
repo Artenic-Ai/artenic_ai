@@ -86,7 +86,7 @@ def _build_provider():
         username="user",
         password="pass",
         project_id="proj-123",
-        region="GRA",
+        region="GRA11",
         image_id="img-123",
         network_id="net-456",
     )
@@ -102,7 +102,7 @@ class TestOVHProviderInit:
         p = _build_provider()
         assert p._auth_url == "https://auth.cloud.ovh.net/v3"
         assert p._username == "user"
-        assert p._region == "GRA"
+        assert p._region == "GRA11"
         assert p._container_name == "artenic-training"
 
 

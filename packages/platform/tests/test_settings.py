@@ -474,7 +474,7 @@ class TestPlatformSettings:
         s = PlatformSettings()
         assert s.ovh.provider_label == "ovh"
         assert s.ovh.auth_url == "https://auth.cloud.ovh.net/v3"
-        assert s.ovh.region == "GRA"
+        assert s.ovh.region == "GRA11"
         assert s.ovh.default_flavor == "b2-30"
         assert s.ovh.network_name == "Ext-Net"
         assert s.ovh.image_name == "Ubuntu 22.04"

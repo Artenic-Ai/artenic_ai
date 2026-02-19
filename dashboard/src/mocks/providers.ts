@@ -182,7 +182,7 @@ export const MOCK_PROVIDER_DETAILS: Record<string, ProviderDetail> = {
     has_credentials: true,
     config: {
       auth_url: "https://auth.cloud.ovh.net/v3",
-      region: "GRA",
+      region: "GRA11",
       user_domain_name: "Default",
     },
     capabilities: [
@@ -240,7 +240,7 @@ export const MOCK_PROVIDER_DETAILS: Record<string, ProviderDetail> = {
       {
         key: "region",
         label: "Default Region",
-        default: "GRA",
+        default: "GRA11",
         description: "",
       },
       {
