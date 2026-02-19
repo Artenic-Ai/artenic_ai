@@ -48,6 +48,21 @@ export const queryKeys = {
     spendingHistory: () =>
       [...queryKeys.budgets.all, "spending", "history"] as const,
   },
+  datasets: {
+    all: ["datasets"] as const,
+    list: () => [...queryKeys.datasets.all, "list"] as const,
+    detail: (id: string) => [...queryKeys.datasets.all, id] as const,
+    files: (id: string) => [...queryKeys.datasets.all, id, "files"] as const,
+    versions: (id: string) =>
+      [...queryKeys.datasets.all, id, "versions"] as const,
+    stats: (id: string) => [...queryKeys.datasets.all, id, "stats"] as const,
+    preview: (id: string) =>
+      [...queryKeys.datasets.all, id, "preview"] as const,
+    lineage: (id: string) =>
+      [...queryKeys.datasets.all, id, "lineage"] as const,
+    storageOptions: () =>
+      [...queryKeys.datasets.all, "storage-options"] as const,
+  },
   activity: {
     all: ["activity"] as const,
   },

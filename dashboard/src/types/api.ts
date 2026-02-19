@@ -258,3 +258,88 @@ export interface ActivityEvent {
   timestamp: string;
   severity?: "info" | "warning" | "error" | "success";
 }
+
+// ── Datasets ─────────────────────────────────────────────────────────────────
+
+export interface Dataset {
+  id: string;
+  name: string;
+  description: string;
+  format: string;
+  storage_backend: string;
+  source: string;
+  tags: Record<string, string>;
+  current_version: number;
+  total_size_bytes: number;
+  total_files: number;
+  schema_info?: {
+    columns: Array<{ name: string; dtype: string; nullable: boolean }>;
+  };
+  created_at: string;
+  updated_at?: string;
+}
+
+export interface StorageOption {
+  id: string;
+  label: string;
+  available: boolean;
+}
+
+export interface DatasetVersion {
+  id: number;
+  dataset_id: string;
+  version: number;
+  hash: string;
+  size_bytes: number;
+  num_files: number;
+  num_records?: number;
+  change_summary: string;
+  created_at: string;
+}
+
+export interface DatasetFile {
+  id: number;
+  dataset_id: string;
+  version: number;
+  filename: string;
+  mime_type: string;
+  size_bytes: number;
+  hash: string;
+  created_at: string;
+}
+
+export interface DatasetStats {
+  total_size_bytes: number;
+  total_files: number;
+  num_records?: number;
+  schema_info?: {
+    columns: Array<{ name: string; dtype: string; nullable: boolean }>;
+  };
+  format_breakdown: Record<string, number>;
+}
+
+export interface DatasetLineage {
+  id: number;
+  dataset_id: string;
+  dataset_version: number;
+  entity_type: string;
+  entity_id: string;
+  role: string;
+  created_at: string;
+}
+
+export interface DatasetPreview {
+  columns: string[];
+  rows: Array<Record<string, unknown>>;
+  total_rows: number;
+  truncated: boolean;
+}
+
+export interface CreateDatasetRequest {
+  name: string;
+  format: string;
+  storage_backend?: string;
+  description?: string;
+  source?: string;
+  tags?: Record<string, string>;
+}

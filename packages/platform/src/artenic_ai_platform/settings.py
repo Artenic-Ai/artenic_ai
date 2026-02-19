@@ -97,6 +97,45 @@ class CanaryConfig(BaseModel):
     auto_rollback_threshold: float = 0.80
 
 
+class DatasetStorageConfig(BaseModel):
+    """Dataset storage backend configuration."""
+
+    backend: Literal["filesystem", "s3", "gcs", "azure", "ovh"] = "filesystem"
+    # Filesystem
+    local_dir: str = "data/datasets"
+    # Cloud common
+    bucket: str = ""
+    container: str = ""
+    prefix: str = "datasets/"
+    # S3 / OVH
+    endpoint_url: str = ""
+    access_key: str = ""
+    secret_key: str = ""
+    region: str = ""
+    # GCS
+    credentials_path: str = ""
+    project_id: str = ""
+    # Azure
+    connection_string: str = ""
+
+
+class DatasetConfig(BaseModel):
+    """Dataset management configuration."""
+
+    enabled: bool = True
+    storage: DatasetStorageConfig = Field(
+        default_factory=DatasetStorageConfig,
+    )
+    max_upload_size_mb: int = 500
+    allowed_extensions: list[str] = Field(
+        default_factory=lambda: [
+            "csv", "parquet", "json", "jsonl",
+            "png", "jpg", "jpeg", "wav", "mp3",
+            "txt", "tsv", "feather", "arrow",
+        ],
+    )
+
+
 # ---------------------------------------------------------------------------
 # Cloud-provider configs
 # ---------------------------------------------------------------------------
@@ -401,6 +440,9 @@ class PlatformSettings(BaseSettings):
     )
     canary: CanaryConfig = Field(
         default_factory=CanaryConfig,
+    )
+    dataset: DatasetConfig = Field(
+        default_factory=DatasetConfig,
     )
 
     # -- Cloud-provider configs -----------------------------------------------

@@ -55,6 +55,10 @@ EXPECTED_TABLES = sorted(
         "config_settings",
         "config_audit_log",
         "config_overrides",
+        "datasets",
+        "dataset_versions",
+        "dataset_files",
+        "dataset_lineage",
     ]
 )
 

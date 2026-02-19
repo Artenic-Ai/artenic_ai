@@ -3,9 +3,40 @@
 All notable changes to this project will be documented in this file.
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [Unreleased]
+## [0.5.0] — 2026-02-19
 
-*(nothing yet)*
+### Step 6 — Datasets — Full-Stack Feature (Platform + CLI + Dashboard)
+
+#### Platform — Dataset Management API (`/api/v1/datasets`)
+- 4 ORM models: `DatasetRecord`, `DatasetVersionRecord`, `DatasetFileRecord`, `DatasetLineageRecord` (21 tables total)
+- `StorageBackend` abstraction with `FilesystemStorage` implementation + cloud stubs (S3, GCS, Azure, OVH)
+- `DatasetService` — CRUD, file upload/download, versioning (SHA-256 hashes), auto-stats (CSV/JSON/JSONL record counts), tabular preview, lineage tracking
+- 17 REST endpoints: storage options, CRUD, files (upload/list/download/delete), versions, stats, preview, lineage
+- `DatasetConfig` + `DatasetStorageConfig` in platform settings
+- `python-multipart` dependency for file upload support
+
+#### CLI — Dataset Commands
+- `artenic dataset` command group: list, create, get, update, delete
+- File operations: upload, download, files
+- Analytics: stats, preview (with `--limit`)
+- Versioning: `version list`, `version create` (with `--message`)
+- Lineage: view linked models and training jobs
+- Rich table output + `--json` machine-readable mode
+
+#### Dashboard — Datasets Section
+- **Datasets List** page with DataTable (name, format, files, size, version, created), create dialog with storage backend selector
+- **Dataset Detail** page with metadata, statistics, schema (tabular), preview, files, version history, lineage
+- Sidebar navigation with Database icon
+- React Query hooks (`useDatasets`, `useDatasetFiles`, `useDatasetVersions`, `useDatasetStats`, `useDatasetPreview`, `useDatasetLineage`)
+- Mock data: 5 demo datasets (imagenet-mini, customer-churn, financial-ticks, nlp-reviews, audio-commands)
+
+#### Quality
+- Platform: 1520 tests (114 new dataset tests)
+- CLI: 191 tests (32 new dataset tests)
+- Dashboard: 68 tests, build clean
+- mypy strict — 0 errors across 76 source files
+- ruff lint — clean
+- SDK: 614 tests, 100% coverage (2 tests added for distributed validation)
 
 ## [0.4.0] — 2026-02-18
 
@@ -92,7 +123,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 #### Step 3.1 — Foundation
 - `PlatformSettings` (pydantic-settings) with `ARTENIC_` prefix, all provider configs, nested models for budget/health/canary/ensemble/A/B/webhook/spot
 - Async SQLAlchemy engine (`sqlite+aiosqlite` for dev, `postgresql+asyncpg` for prod) with session factory
-- 17 ORM tables: models, promotions, training jobs, budgets, alerts, outcomes, ensembles, versions, A/B tests, metrics, health, config settings, audit log
+- 17 ORM tables (initial): models, promotions, training jobs, budgets, alerts, outcomes, ensembles, versions, A/B tests, metrics, health, config settings, audit log
 - `SecretManager` — Fernet symmetric encryption with SHA-256 key derivation, dev-mode fallback
 - Middleware stack (outer → inner): Correlation ID, Catch-All Errors, CORS, Auth, Rate Limit, Metrics, GZip
 - API key authentication with `hmac.compare_digest` constant-time comparison, exempt paths

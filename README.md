@@ -64,11 +64,11 @@ artenic_ai/
 
 | Package | Description | Status | Tests | Coverage |
 |---------|-------------|--------|-------|----------|
-| `sdk` | BaseModel contract, schemas, ensemble, serialization, decorators | **Complete** | 611 | 100% |
-| `platform` | FastAPI gateway, registry, training orchestrator, 15 providers | **Complete** | 1362 | 100% |
-| `cli` | Command-line interface — 10 command groups, 40+ subcommands | **Complete** | 159 | 100% |
+| `sdk` | BaseModel contract, schemas, ensemble, serialization, decorators | **Complete** | 614 | 100% |
+| `platform` | FastAPI gateway, registry, training, datasets, 16 providers | **Complete** | 1520 | 100% |
+| `cli` | Command-line interface — 11 command groups, 50+ subcommands | **Complete** | 191 | 100% |
 | `optimizer` | LTR-based training instance selection | Stub | — | — |
-| `dashboard` | React admin UI — 9 pages, dark theme, demo mode | **Complete** | 68 | — |
+| `dashboard` | React admin UI — 10 pages, dark theme, demo mode | **Complete** | 68 | — |
 
 ### Dependency Graph
 
@@ -101,13 +101,15 @@ sdk (leaf — no internal deps)
 - **A/B testing** — variant routing, metric aggregation, statistical analysis
 - **Ensemble management** — versioned ensembles with training dispatch
 - **Health monitoring** — background drift detection, error rate tracking, latency percentiles
+- **Dataset management** — CRUD, file upload/download, versioning (SHA-256), auto-stats, tabular preview, lineage tracking
+- **Storage abstraction** — filesystem (default), cloud stubs (S3, GCS, Azure, OVH) — user selects backend per dataset
 - **Event system** — async pub/sub EventBus + WebSocket real-time streaming
 - **Settings hot-reload** — encrypted secrets, audit log, runtime configuration
 - **Plugin system** — entry-point discovery for providers, strategies, services
 
 ### CLI (`packages/cli/`)
 
-- **10 command groups** covering all platform API endpoints (models, training, inference, ensembles, A/B tests, budgets, settings, health, config)
+- **11 command groups** covering all platform API endpoints (models, training, inference, ensembles, A/B tests, budgets, datasets, settings, health, config)
 - **Rich terminal output** — tables and key-value dicts with `--json` machine-readable mode
 - **TOML multi-profile configuration** (`~/.artenic/config.toml`) with precedence: CLI flags > env vars > TOML > defaults
 - **Security hardening** — credential masking, TOML injection prevention, error message sanitization
@@ -115,7 +117,7 @@ sdk (leaf — no internal deps)
 
 ### Dashboard (`dashboard/`) — [ai.artenic.ch](https://ai.artenic.ch)
 
-- **9 pages** — Overview, Model Registry, Training Jobs, Inference Playground, Ensembles, A/B Tests, Budgets, Settings, Health Monitoring
+- **10 pages** — Overview, Model Registry, Training Jobs, Datasets, Inference Playground, Ensembles, A/B Tests, Budgets, Settings, Health Monitoring
 - **Dark theme** — professional Grafana/Vercel-inspired palette with semantic color tokens
 - **Demo mode** — realistic mock data (8 models, 12 training jobs, 3 ensembles, 3 A/B tests, 4 budget rules) — no backend required
 - **15 UI components** — DataTable with sort/pagination, Dialog with a11y, Charts (area, bar, line), Toast notifications

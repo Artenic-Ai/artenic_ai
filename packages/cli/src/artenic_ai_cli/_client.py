@@ -60,9 +60,35 @@ class ApiClient:
         """HTTP PUT."""
         return await self._request("PUT", path, json=json)
 
+    async def patch(self, path: str, *, json: Any = None) -> Any:
+        """HTTP PATCH."""
+        return await self._request("PATCH", path, json=json)
+
     async def delete(self, path: str) -> Any:
         """HTTP DELETE."""
         return await self._request("DELETE", path)
+
+    async def upload_file(
+        self, path: str, filename: str, data: bytes, mime_type: str
+    ) -> Any:
+        """Upload a file via multipart/form-data."""
+        if not self._client:
+            raise PlatformError("Client not initialized. Use 'async with' context.")
+        response = await self._client.post(
+            path, files={"file": (filename, data, mime_type)}
+        )
+        if response.status_code >= 400:
+            raise PlatformError(f"Platform error {response.status_code}: {response.text}")
+        return response.json()
+
+    async def download_bytes(self, path: str) -> bytes:
+        """Download raw bytes from an endpoint."""
+        if not self._client:
+            raise PlatformError("Client not initialized. Use 'async with' context.")
+        response = await self._client.get(path)
+        if response.status_code >= 400:
+            raise PlatformError(f"Platform error {response.status_code}: {response.text}")
+        return response.content
 
     async def _request(self, method: str, path: str, **kwargs: Any) -> Any:
         """Send request and map HTTP errors to SDK exceptions."""

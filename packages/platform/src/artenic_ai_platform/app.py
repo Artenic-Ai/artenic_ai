@@ -14,6 +14,15 @@ from artenic_ai_platform.ab_testing.router import router as ab_testing_router
 from artenic_ai_platform.budget.router import router as budget_router
 from artenic_ai_platform.budget.service import BudgetManager
 from artenic_ai_platform.config.crypto import SecretManager
+from artenic_ai_platform.datasets.router import router as dataset_router
+from artenic_ai_platform.datasets.storage import (
+    AzureBlobStorage,
+    FilesystemStorage,
+    GCSStorage,
+    OVHSwiftStorage,
+    S3Storage,
+    StorageBackend,
+)
 from artenic_ai_platform.db.engine import (
     create_async_engine,
     create_session_factory,
@@ -113,6 +122,9 @@ async def _lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     # Wire the get_db dependency to the real session factory
     app.state.get_db = build_get_db(session_factory)
 
+    # Dataset storage
+    app.state.dataset_storage = _build_dataset_storage(settings)
+
     # Start health monitor if enabled
     if getattr(settings.health, "enabled", True):
         health_monitor.start()
@@ -128,6 +140,46 @@ async def _lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     health_monitor.stop()
     await engine.dispose()
     logger.info("Platform shut down")
+
+
+def _build_dataset_storage(settings: PlatformSettings) -> StorageBackend:
+    """Create the dataset storage backend based on configuration."""
+    backend = settings.dataset.storage.backend
+    if backend == "filesystem":
+        return FilesystemStorage(base_dir=settings.dataset.storage.local_dir)
+    if backend == "s3":
+        return S3Storage(
+            bucket=settings.dataset.storage.bucket,
+            prefix=settings.dataset.storage.prefix,
+            endpoint_url=settings.dataset.storage.endpoint_url,
+            access_key=settings.dataset.storage.access_key,
+            secret_key=settings.dataset.storage.secret_key,
+            region=settings.dataset.storage.region,
+        )
+    if backend == "gcs":
+        return GCSStorage(
+            bucket=settings.dataset.storage.bucket,
+            prefix=settings.dataset.storage.prefix,
+            credentials_path=settings.dataset.storage.credentials_path,
+            project_id=settings.dataset.storage.project_id,
+        )
+    if backend == "azure":
+        return AzureBlobStorage(
+            container=settings.dataset.storage.container,
+            prefix=settings.dataset.storage.prefix,
+            connection_string=settings.dataset.storage.connection_string,
+        )
+    if backend == "ovh":
+        return OVHSwiftStorage(
+            container=settings.dataset.storage.container,
+            prefix=settings.dataset.storage.prefix,
+            endpoint_url=settings.dataset.storage.endpoint_url,
+            access_key=settings.dataset.storage.access_key,
+            secret_key=settings.dataset.storage.secret_key,
+            region=settings.dataset.storage.region,
+        )
+    msg = f"Unknown dataset storage backend: {backend}"
+    raise ValueError(msg)
 
 
 def create_app(settings: PlatformSettings | None = None) -> FastAPI:
@@ -177,6 +229,7 @@ def create_app(settings: PlatformSettings | None = None) -> FastAPI:
     app.include_router(inference_router)
     app.include_router(ensemble_router)
     app.include_router(ab_testing_router)
+    app.include_router(dataset_router)
     app.include_router(ws_router)
 
     return app

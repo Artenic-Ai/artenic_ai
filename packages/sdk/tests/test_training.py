@@ -1999,6 +1999,40 @@ class TestFSDPManager:
         mock_torch.distributed.init_process_group.assert_not_called()
         assert ctx.rank == 0
 
+    def test_setup_invalid_env_var(self) -> None:
+        from artenic_ai_sdk.training.distributed import FSDPManager
+
+        cfg = DistributedConfig()
+        mgr = FSDPManager(cfg)
+
+        mock_torch = MagicMock()
+        with (
+            patch.dict(
+                "sys.modules",
+                {"torch": mock_torch, "torch.distributed": mock_torch.distributed},
+            ),
+            patch.dict("os.environ", {"RANK": "not_a_number", "WORLD_SIZE": "1"}),
+            pytest.raises(RuntimeError, match="Invalid distributed environment variable"),
+        ):
+            mgr.setup()
+
+    def test_setup_rank_out_of_range(self) -> None:
+        from artenic_ai_sdk.training.distributed import FSDPManager
+
+        cfg = DistributedConfig()
+        mgr = FSDPManager(cfg)
+
+        mock_torch = MagicMock()
+        with (
+            patch.dict(
+                "sys.modules",
+                {"torch": mock_torch, "torch.distributed": mock_torch.distributed},
+            ),
+            patch.dict("os.environ", {"RANK": "5", "WORLD_SIZE": "2", "LOCAL_RANK": "0"}),
+            pytest.raises(RuntimeError, match="RANK=5 must be in"),
+        ):
+            mgr.setup()
+
     def test_wrap_ddp(self) -> None:
         from artenic_ai_sdk.training.distributed import DistributedContext, FSDPManager
 

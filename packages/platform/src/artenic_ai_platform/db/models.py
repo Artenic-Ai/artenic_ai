@@ -838,3 +838,181 @@ class ConfigOverrideRecord(Base):
         DateTime(timezone=True),
         server_default=func.now(),
     )
+
+
+# ------------------------------------------------------------------
+# 18. DatasetRecord
+# ------------------------------------------------------------------
+
+
+class DatasetRecord(Base):
+    """A managed dataset with metadata and versioning."""
+
+    __tablename__ = "datasets"
+
+    id: Mapped[str] = mapped_column(
+        String(36),
+        primary_key=True,
+    )
+    name: Mapped[str] = mapped_column(String(255))
+    description: Mapped[str] = mapped_column(
+        Text,
+        default="",
+    )
+    format: Mapped[str] = mapped_column(String(50))
+    storage_backend: Mapped[str] = mapped_column(
+        String(50),
+        default="filesystem",
+    )
+    source: Mapped[str] = mapped_column(
+        String(500),
+        default="",
+    )
+    tags: Mapped[dict] = mapped_column(  # type: ignore[type-arg]
+        JSON,
+        default=dict,
+    )
+    current_version: Mapped[int] = mapped_column(
+        Integer,
+        default=0,
+    )
+    total_size_bytes: Mapped[int] = mapped_column(
+        Integer,
+        default=0,
+    )
+    total_files: Mapped[int] = mapped_column(
+        Integer,
+        default=0,
+    )
+    schema_info: Mapped[dict | None] = mapped_column(  # type: ignore[type-arg]
+        JSON,
+        nullable=True,
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+    )
+    updated_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+        onupdate=func.now(),
+    )
+
+
+# ------------------------------------------------------------------
+# 19. DatasetVersionRecord
+# ------------------------------------------------------------------
+
+
+class DatasetVersionRecord(Base):
+    """Immutable version snapshot of a dataset."""
+
+    __tablename__ = "dataset_versions"
+    __table_args__ = (UniqueConstraint("dataset_id", "version"),)
+
+    id: Mapped[int] = mapped_column(
+        Integer,
+        primary_key=True,
+        autoincrement=True,
+    )
+    dataset_id: Mapped[str] = mapped_column(
+        String(36),
+        ForeignKey("datasets.id", ondelete="CASCADE"),
+    )
+    version: Mapped[int] = mapped_column(Integer)
+    hash: Mapped[str] = mapped_column(String(128))
+    size_bytes: Mapped[int] = mapped_column(
+        Integer,
+        default=0,
+    )
+    num_files: Mapped[int] = mapped_column(
+        Integer,
+        default=0,
+    )
+    num_records: Mapped[int | None] = mapped_column(
+        Integer,
+        nullable=True,
+    )
+    change_summary: Mapped[str] = mapped_column(
+        String(500),
+        default="",
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+    )
+
+
+# ------------------------------------------------------------------
+# 20. DatasetFileRecord
+# ------------------------------------------------------------------
+
+
+class DatasetFileRecord(Base):
+    """A single file within a dataset."""
+
+    __tablename__ = "dataset_files"
+
+    id: Mapped[int] = mapped_column(
+        Integer,
+        primary_key=True,
+        autoincrement=True,
+    )
+    dataset_id: Mapped[str] = mapped_column(
+        String(36),
+        ForeignKey("datasets.id", ondelete="CASCADE"),
+    )
+    version: Mapped[int] = mapped_column(Integer)
+    filename: Mapped[str] = mapped_column(String(500))
+    mime_type: Mapped[str] = mapped_column(
+        String(100),
+        default="",
+    )
+    size_bytes: Mapped[int] = mapped_column(
+        Integer,
+        default=0,
+    )
+    hash: Mapped[str] = mapped_column(
+        String(128),
+        default="",
+    )
+    storage_path: Mapped[str] = mapped_column(String(1000))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+    )
+
+
+# ------------------------------------------------------------------
+# 21. DatasetLineageRecord
+# ------------------------------------------------------------------
+
+
+class DatasetLineageRecord(Base):
+    """Links a dataset version to a model or training job."""
+
+    __tablename__ = "dataset_lineage"
+    __table_args__ = (
+        UniqueConstraint("dataset_id", "dataset_version", "entity_type", "entity_id"),
+    )
+
+    id: Mapped[int] = mapped_column(
+        Integer,
+        primary_key=True,
+        autoincrement=True,
+    )
+    dataset_id: Mapped[str] = mapped_column(
+        String(36),
+        ForeignKey("datasets.id", ondelete="CASCADE"),
+    )
+    dataset_version: Mapped[int] = mapped_column(Integer)
+    entity_type: Mapped[str] = mapped_column(String(50))
+    entity_id: Mapped[str] = mapped_column(String(255))
+    role: Mapped[str] = mapped_column(
+        String(50),
+        default="input",
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+    )

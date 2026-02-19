@@ -3,6 +3,15 @@ import { ApiError } from "@/lib/api-client";
 import { MOCK_AB_RESULTS, MOCK_AB_TESTS } from "./ab-tests";
 import { MOCK_ACTIVITY } from "./activity";
 import { MOCK_BUDGETS, MOCK_SPENDING, MOCK_SPENDING_HISTORY } from "./budgets";
+import {
+  MOCK_DATASETS,
+  MOCK_DATASET_FILES,
+  MOCK_DATASET_LINEAGE,
+  MOCK_DATASET_PREVIEW,
+  MOCK_DATASET_STATS,
+  MOCK_DATASET_VERSIONS,
+  MOCK_STORAGE_OPTIONS,
+} from "./datasets";
 import { MOCK_ENSEMBLE_VERSIONS, MOCK_ENSEMBLES } from "./ensembles";
 import { MOCK_MODEL_HEALTH } from "./health";
 import { MOCK_MODELS } from "./models";
@@ -66,6 +75,43 @@ export async function handleDemoRequest<T>(
     const job = MOCK_TRAINING_JOBS.find((j) => j.job_id === segments[1]);
     if (job) return job as T;
     throw new ApiError(404, `Training job ${segments[1]} not found`);
+  }
+
+  // ── Datasets ──────────────────────────────────────────────────────────────────
+  if (segments[0] === "datasets" && method === "GET") {
+    if (segments.length === 1) return MOCK_DATASETS as T;
+    if (segments[1] === "storage-options") return MOCK_STORAGE_OPTIONS as T;
+    const dsId = segments[1] ?? "";
+    if (segments.length === 3) {
+      if (segments[2] === "files") {
+        const files = MOCK_DATASET_FILES[dsId];
+        if (files) return files as T;
+        throw new ApiError(404, `Dataset ${dsId} not found`);
+      }
+      if (segments[2] === "versions") {
+        const versions = MOCK_DATASET_VERSIONS[dsId];
+        if (versions) return versions as T;
+        throw new ApiError(404, `Dataset ${dsId} not found`);
+      }
+      if (segments[2] === "stats") {
+        const stats = MOCK_DATASET_STATS[dsId];
+        if (stats) return stats as T;
+        throw new ApiError(404, `Dataset ${dsId} not found`);
+      }
+      if (segments[2] === "preview") {
+        const preview = MOCK_DATASET_PREVIEW[dsId];
+        if (preview) return preview as T;
+        throw new ApiError(404, `Dataset ${dsId} has no preview`);
+      }
+      if (segments[2] === "lineage") {
+        const lineage = MOCK_DATASET_LINEAGE[dsId];
+        if (lineage) return lineage as T;
+        throw new ApiError(404, `Dataset ${dsId} not found`);
+      }
+    }
+    const dataset = MOCK_DATASETS.find((d) => d.id === dsId);
+    if (dataset) return dataset as T;
+    throw new ApiError(404, `Dataset ${dsId} not found`);
   }
 
   // ── Ensembles ───────────────────────────────────────────────────────────────

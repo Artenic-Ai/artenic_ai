@@ -71,6 +71,16 @@ const TrainingDetailPage = lazy(() =>
     default: m.TrainingDetailPage,
   })),
 );
+const DatasetsListPage = lazy(() =>
+  import("@/pages/datasets/datasets-list").then((m) => ({
+    default: m.DatasetsListPage,
+  })),
+);
+const DatasetDetailPage = lazy(() =>
+  import("@/pages/datasets/dataset-detail").then((m) => ({
+    default: m.DatasetDetailPage,
+  })),
+);
 const InferencePlaygroundPage = lazy(() =>
   import("@/pages/inference/inference-playground").then((m) => ({
     default: m.InferencePlaygroundPage,
@@ -142,6 +152,8 @@ const router = createBrowserRouter([
       { path: "models/:modelId", element: <ModelDetailPage /> },
       { path: "training", element: <TrainingListPage /> },
       { path: "training/:jobId", element: <TrainingDetailPage /> },
+      { path: "datasets", element: <DatasetsListPage /> },
+      { path: "datasets/:datasetId", element: <DatasetDetailPage /> },
       { path: "inference", element: <InferencePlaygroundPage /> },
       { path: "ensembles", element: <EnsemblesListPage /> },
       { path: "ensembles/:ensembleId", element: <EnsembleDetailPage /> },
