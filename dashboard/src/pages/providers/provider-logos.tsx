@@ -1,3 +1,4 @@
+import type React from "react";
 import type { SVGProps } from "react";
 
 type LogoProps = SVGProps<SVGSVGElement> & { size?: number };
@@ -127,7 +128,7 @@ export function VastaiLogo(props: LogoProps) {
 
 /* ── Lookup ───────────────────────────────────────────────────────────────── */
 
-const LOGOS: Record<string, (props: LogoProps) => JSX.Element> = {
+const LOGOS: Record<string, (props: LogoProps) => React.JSX.Element> = {
   ovh: OvhLogo,
   infomaniak: InfomaniakLogo,
   aws: AwsLogo,

@@ -46,7 +46,6 @@ import type {
 } from "@/types/api";
 
 import { ProviderConfigureDialog } from "./provider-configure-dialog";
-import { ProviderLogo } from "./provider-logos";
 
 /* ── Status helpers ──────────────────────────────────────────────────────── */
 
