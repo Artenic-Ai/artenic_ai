@@ -21,6 +21,9 @@ import uuid
 from pathlib import Path
 from typing import Any
 
+import openstack
+import openstack.connection
+
 from artenic_ai_platform.providers.base import (
     CloudJobStatus,
     InstanceType,
@@ -30,27 +33,6 @@ from artenic_ai_platform.providers.base import (
 from artenic_ai_platform.providers.cloud_base import CloudProvider
 
 logger = logging.getLogger(__name__)
-
-# ---------------------------------------------------------------------------
-# Lazy import of openstacksdk -- it is an optional dependency
-# ---------------------------------------------------------------------------
-try:
-    import openstack  # pragma: no cover
-    import openstack.connection  # pragma: no cover
-
-    _HAS_OPENSTACK = True  # pragma: no cover
-except ImportError:
-    _HAS_OPENSTACK = False
-    openstack = None
-
-
-def _require_openstack() -> None:
-    """Raise a clear error when the SDK is missing."""
-    if not _HAS_OPENSTACK:
-        raise ImportError(
-            "The 'openstacksdk' package is required for InfomaniakProvider.  "
-            "Install it with:  pip install openstacksdk"
-        )
 
 
 # ---------------------------------------------------------------------------
@@ -134,7 +116,6 @@ class InfomaniakProvider(CloudProvider):
         image_id: str | None = None,
         container_name: str = "artenic-training",
     ) -> None:
-        _require_openstack()
         super().__init__()
 
         self._auth_url = auth_url

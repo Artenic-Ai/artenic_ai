@@ -69,7 +69,6 @@ def _patch_openstack(monkeypatch):
 
     import artenic_ai_platform.providers.infomaniak as info_mod
 
-    monkeypatch.setattr(info_mod, "_HAS_OPENSTACK", True)
     monkeypatch.setattr(info_mod, "openstack", mock_openstack)
 
 
@@ -99,13 +98,6 @@ class TestInfomaniakInit:
         assert p._username == "user"
         assert p._region == "dc3-a"
         assert p._container_name == "artenic-training"
-
-    def test_init_raises_without_openstack(self, monkeypatch):
-        import artenic_ai_platform.providers.infomaniak as mod
-
-        monkeypatch.setattr(mod, "_HAS_OPENSTACK", False)
-        with pytest.raises(ImportError, match="openstacksdk"):
-            _build_provider()
 
 
 class TestInfomaniakProviderName:

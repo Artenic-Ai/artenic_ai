@@ -12,6 +12,9 @@ import logging
 import time
 from typing import Any
 
+import openstack
+import openstack.connection
+
 from artenic_ai_platform.providers_hub.connectors.base import (
     ConnectorContext,
     ProviderConnector,
@@ -24,27 +27,6 @@ from artenic_ai_platform.providers_hub.schemas import (
 )
 
 logger = logging.getLogger(__name__)
-
-# ---------------------------------------------------------------------------
-# Lazy import — openstacksdk is an optional dependency
-# ---------------------------------------------------------------------------
-try:
-    import openstack  # pragma: no cover
-    import openstack.connection  # pragma: no cover
-
-    _HAS_OPENSTACK = True  # pragma: no cover
-except ImportError:
-    _HAS_OPENSTACK = False
-    openstack = None
-
-
-def _require_openstack() -> None:
-    if not _HAS_OPENSTACK:
-        msg = (
-            "The 'openstacksdk' package is required for OpenStack providers.  "
-            "Install it with:  pip install openstacksdk"
-        )
-        raise ImportError(msg)
 
 
 # Known GPU model strings in flavor names.
@@ -64,7 +46,6 @@ class OpenStackConnector(ProviderConnector):
 
     def _build_connection(self, ctx: ConnectorContext) -> Any:
         """Create an ``openstack.Connection`` from user credentials."""
-        _require_openstack()
         creds = ctx.credentials  # pragma: no cover
         cfg = ctx.config  # pragma: no cover
         auth_url = cfg.get("auth_url") or creds.get("auth_url", "")  # pragma: no cover

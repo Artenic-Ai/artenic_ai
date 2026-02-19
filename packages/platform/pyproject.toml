@@ -30,6 +30,7 @@ dependencies = [
     "mlflow>=2.17",
     "cryptography>=43.0",
     "python-multipart>=0.0.9",
+    "openstacksdk>=4.0",
 ]
 
 [project.optional-dependencies]
@@ -42,7 +43,6 @@ azure = [
     "azure-storage-blob>=12.19",
     "azure-identity>=1.15",
 ]
-openstack = ["openstacksdk>=4.0"]
 k8s = ["kubernetes>=28.0"]
 
 [tool.hatch.build.targets.wheel]

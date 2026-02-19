@@ -22,6 +22,9 @@ import uuid
 from pathlib import Path
 from typing import Any
 
+import openstack
+import openstack.connection
+
 from artenic_ai_platform.providers.base import (
     CloudJobStatus,
     InstanceType,
@@ -31,27 +34,6 @@ from artenic_ai_platform.providers.base import (
 from artenic_ai_platform.providers.cloud_base import CloudProvider
 
 logger = logging.getLogger(__name__)
-
-# ---------------------------------------------------------------------------
-# Lazy import of openstacksdk -- it is an optional dependency
-# ---------------------------------------------------------------------------
-try:
-    import openstack  # pragma: no cover
-    import openstack.connection  # pragma: no cover
-
-    _HAS_OPENSTACK = True  # pragma: no cover
-except ImportError:
-    _HAS_OPENSTACK = False
-    openstack = None
-
-
-def _require_openstack() -> None:
-    """Raise a clear error when the SDK is missing."""
-    if not _HAS_OPENSTACK:
-        raise ImportError(
-            "The 'openstacksdk' package is required for OVHProvider.  "
-            "Install it with:  pip install openstacksdk"
-        )
 
 
 # ---------------------------------------------------------------------------
@@ -115,7 +97,7 @@ class OVHProvider(CloudProvider):
     project_id:
         OVH Public Cloud project ID (also used for API pricing calls).
     region:
-        OVH region code (default ``GRA11``).
+        OVH region code (default ``GRA``).
     flavor:
         Default Nova flavor name for compute instances.
     network_id:
@@ -132,13 +114,12 @@ class OVHProvider(CloudProvider):
         username: str,
         password: str,
         project_id: str,
-        region: str = "GRA11",
+        region: str = "GRA",
         flavor: str | None = None,
         network_id: str | None = None,
         image_id: str | None = None,
         container_name: str = "artenic-training",
     ) -> None:
-        _require_openstack()
         super().__init__()
 
         self._auth_url = auth_url

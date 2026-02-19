@@ -358,6 +358,7 @@ export interface CredentialField {
   required: boolean;
   secret: boolean;
   placeholder: string;
+  description: string;
 }
 
 export interface ConfigField {

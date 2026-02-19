@@ -469,7 +469,7 @@ class PlatformSettings(BaseSettings):
         default_factory=lambda: OpenStackConfig(
             provider_label="ovh",
             auth_url="https://auth.cloud.ovh.net/v3",
-            region="GRA11",
+            region="GRA",
             default_flavor="b2-30",
             network_name="Ext-Net",
             image_name="Ubuntu 22.04",

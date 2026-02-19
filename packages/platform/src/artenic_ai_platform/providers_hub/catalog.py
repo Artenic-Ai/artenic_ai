@@ -34,6 +34,7 @@ class CredentialField:
     required: bool = True
     secret: bool = False  # masked in UI (passwords, API keys)
     placeholder: str = ""
+    description: str = ""  # help text shown below the input
 
 
 @dataclass(frozen=True)
@@ -96,9 +97,25 @@ PROVIDER_CATALOG: dict[str, ProviderDefinition] = {
             ),
         ),
         credential_fields=(
-            CredentialField("username", "OpenStack Username"),
-            CredentialField("password", "OpenStack Password", secret=True),
-            CredentialField("project_id", "Project ID"),
+            CredentialField(
+                "username",
+                "OpenStack Username",
+                description="Found in OVH Manager > Public Cloud > Users & Roles",
+            ),
+            CredentialField(
+                "password",
+                "OpenStack Password",
+                secret=True,
+                description="Password set when creating the OpenStack user",
+            ),
+            CredentialField(
+                "project_id",
+                "Project ID",
+                description=(
+                    "Found in OVH Manager > Public Cloud > Project Settings, "
+                    "or in the OpenStack RC file"
+                ),
+            ),
         ),
         config_fields=(
             ConfigField(
@@ -107,7 +124,7 @@ PROVIDER_CATALOG: dict[str, ProviderDefinition] = {
                 default="https://auth.cloud.ovh.net/v3",
                 description="OpenStack Identity endpoint",
             ),
-            ConfigField("region", "Default Region", default="GRA11"),
+            ConfigField("region", "Default Region", default="GRA"),
             ConfigField(
                 "user_domain_name",
                 "User Domain Name",
@@ -149,9 +166,22 @@ PROVIDER_CATALOG: dict[str, ProviderDefinition] = {
             ),
         ),
         credential_fields=(
-            CredentialField("username", "OpenStack Username"),
-            CredentialField("password", "OpenStack Password", secret=True),
-            CredentialField("project_id", "Project ID"),
+            CredentialField(
+                "username",
+                "OpenStack Username",
+                description="Found in Infomaniak Manager > Public Cloud > Users",
+            ),
+            CredentialField(
+                "password",
+                "OpenStack Password",
+                secret=True,
+                description="Password set when creating the OpenStack user",
+            ),
+            CredentialField(
+                "project_id",
+                "Project ID",
+                description="Found in Infomaniak Manager > Public Cloud > Project Settings",
+            ),
         ),
         config_fields=(
             ConfigField(
@@ -202,9 +232,23 @@ PROVIDER_CATALOG: dict[str, ProviderDefinition] = {
             ),
         ),
         credential_fields=(
-            CredentialField("access_key", "Access Key", placeholder="SCW..."),
-            CredentialField("secret_key", "Secret Key", secret=True),
-            CredentialField("project_id", "Project ID"),
+            CredentialField(
+                "access_key",
+                "Access Key",
+                placeholder="SCW...",
+                description="Found in Scaleway Console > IAM > API Keys",
+            ),
+            CredentialField(
+                "secret_key",
+                "Secret Key",
+                secret=True,
+                description="Shown once when creating the API key",
+            ),
+            CredentialField(
+                "project_id",
+                "Project ID",
+                description="Found in Scaleway Console > Project Settings",
+            ),
         ),
         config_fields=(
             ConfigField(
@@ -231,7 +275,14 @@ PROVIDER_CATALOG: dict[str, ProviderDefinition] = {
                 "On-demand and interruptible GPU instances",
             ),
         ),
-        credential_fields=(CredentialField("api_key", "API Key", secret=True),),
+        credential_fields=(
+            CredentialField(
+                "api_key",
+                "API Key",
+                secret=True,
+                description="Found in Vast.ai > Account > API Key",
+            ),
+        ),
         config_fields=(),
     ),
     # ------------------------------------------------------------------
@@ -261,8 +312,18 @@ PROVIDER_CATALOG: dict[str, ProviderDefinition] = {
             ),
         ),
         credential_fields=(
-            CredentialField("access_key_id", "Access Key ID", placeholder="AKIA..."),
-            CredentialField("secret_access_key", "Secret Access Key", secret=True),
+            CredentialField(
+                "access_key_id",
+                "Access Key ID",
+                placeholder="AKIA...",
+                description="Found in AWS Console > IAM > Users > Security Credentials",
+            ),
+            CredentialField(
+                "secret_access_key",
+                "Secret Access Key",
+                secret=True,
+                description="Shown once when creating the access key",
+            ),
         ),
         config_fields=(
             ConfigField(
@@ -300,12 +361,20 @@ PROVIDER_CATALOG: dict[str, ProviderDefinition] = {
             ),
         ),
         credential_fields=(
-            CredentialField("project_id", "Project ID", placeholder="my-project-123"),
+            CredentialField(
+                "project_id",
+                "Project ID",
+                placeholder="my-project-123",
+                description="Found in GCP Console > Project Settings",
+            ),
             CredentialField(
                 "credentials_json",
                 "Service Account JSON",
                 secret=True,
                 placeholder="Paste the full JSON key file content",
+                description=(
+                    "Found in GCP Console > IAM > Service Accounts > Keys > Add Key > JSON"
+                ),
             ),
         ),
         config_fields=(
@@ -339,10 +408,27 @@ PROVIDER_CATALOG: dict[str, ProviderDefinition] = {
             ),
         ),
         credential_fields=(
-            CredentialField("subscription_id", "Subscription ID"),
-            CredentialField("tenant_id", "Tenant ID"),
-            CredentialField("client_id", "Client ID (App ID)"),
-            CredentialField("client_secret", "Client Secret", secret=True),
+            CredentialField(
+                "subscription_id",
+                "Subscription ID",
+                description="Found in Azure Portal > Subscriptions",
+            ),
+            CredentialField(
+                "tenant_id",
+                "Tenant ID",
+                description="Found in Azure Portal > Microsoft Entra ID > Properties",
+            ),
+            CredentialField(
+                "client_id",
+                "Client ID (App ID)",
+                description="Found in Azure Portal > App Registrations > Application (client) ID",
+            ),
+            CredentialField(
+                "client_secret",
+                "Client Secret",
+                secret=True,
+                description="Found in Azure Portal > App Registrations > Certificates & Secrets",
+            ),
         ),
         config_fields=(
             ConfigField(

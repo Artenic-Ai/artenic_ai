@@ -182,7 +182,7 @@ export const MOCK_PROVIDER_DETAILS: Record<string, ProviderDetail> = {
     has_credentials: true,
     config: {
       auth_url: "https://auth.cloud.ovh.net/v3",
-      region: "GRA11",
+      region: "GRA",
       user_domain_name: "Default",
     },
     capabilities: [
@@ -209,6 +209,8 @@ export const MOCK_PROVIDER_DETAILS: Record<string, ProviderDetail> = {
         required: true,
         secret: false,
         placeholder: "",
+        description:
+          "Found in OVH Manager > Public Cloud > Users & Roles",
       },
       {
         key: "password",
@@ -216,6 +218,7 @@ export const MOCK_PROVIDER_DETAILS: Record<string, ProviderDetail> = {
         required: true,
         secret: true,
         placeholder: "",
+        description: "Password set when creating the OpenStack user",
       },
       {
         key: "project_id",
@@ -223,6 +226,8 @@ export const MOCK_PROVIDER_DETAILS: Record<string, ProviderDetail> = {
         required: true,
         secret: false,
         placeholder: "",
+        description:
+          "Found in OVH Manager > Public Cloud > Project Settings, or in the OpenStack RC file",
       },
     ],
     config_fields: [
@@ -235,7 +240,7 @@ export const MOCK_PROVIDER_DETAILS: Record<string, ProviderDetail> = {
       {
         key: "region",
         label: "Default Region",
-        default: "GRA11",
+        default: "GRA",
         description: "",
       },
       {
@@ -291,6 +296,8 @@ export const MOCK_PROVIDER_DETAILS: Record<string, ProviderDetail> = {
         required: true,
         secret: false,
         placeholder: "",
+        description:
+          "Found in Infomaniak Manager > Public Cloud > Users",
       },
       {
         key: "password",
@@ -298,6 +305,7 @@ export const MOCK_PROVIDER_DETAILS: Record<string, ProviderDetail> = {
         required: true,
         secret: true,
         placeholder: "",
+        description: "Password set when creating the OpenStack user",
       },
       {
         key: "project_id",
@@ -305,6 +313,8 @@ export const MOCK_PROVIDER_DETAILS: Record<string, ProviderDetail> = {
         required: true,
         secret: false,
         placeholder: "",
+        description:
+          "Found in Infomaniak Manager > Public Cloud > Project Settings",
       },
     ],
     config_fields: [
@@ -373,6 +383,8 @@ export const MOCK_PROVIDER_DETAILS: Record<string, ProviderDetail> = {
         required: true,
         secret: false,
         placeholder: "AKIA...",
+        description:
+          "Found in AWS Console > IAM > Users > Security Credentials",
       },
       {
         key: "secret_access_key",
@@ -380,6 +392,7 @@ export const MOCK_PROVIDER_DETAILS: Record<string, ProviderDetail> = {
         required: true,
         secret: true,
         placeholder: "",
+        description: "Shown once when creating the access key",
       },
     ],
     config_fields: [
@@ -430,6 +443,7 @@ export const MOCK_PROVIDER_DETAILS: Record<string, ProviderDetail> = {
         required: true,
         secret: false,
         placeholder: "my-project-123",
+        description: "Found in GCP Console > Project Settings",
       },
       {
         key: "credentials_json",
@@ -437,6 +451,8 @@ export const MOCK_PROVIDER_DETAILS: Record<string, ProviderDetail> = {
         required: true,
         secret: true,
         placeholder: "Paste the full JSON key file content",
+        description:
+          "Found in GCP Console > IAM > Service Accounts > Keys > Add Key > JSON",
       },
     ],
     config_fields: [
@@ -484,6 +500,7 @@ export const MOCK_PROVIDER_DETAILS: Record<string, ProviderDetail> = {
         required: true,
         secret: false,
         placeholder: "",
+        description: "Found in Azure Portal > Subscriptions",
       },
       {
         key: "tenant_id",
@@ -491,6 +508,8 @@ export const MOCK_PROVIDER_DETAILS: Record<string, ProviderDetail> = {
         required: true,
         secret: false,
         placeholder: "",
+        description:
+          "Found in Azure Portal > Microsoft Entra ID > Properties",
       },
       {
         key: "client_id",
@@ -498,6 +517,8 @@ export const MOCK_PROVIDER_DETAILS: Record<string, ProviderDetail> = {
         required: true,
         secret: false,
         placeholder: "",
+        description:
+          "Found in Azure Portal > App Registrations > Application (client) ID",
       },
       {
         key: "client_secret",
@@ -505,6 +526,8 @@ export const MOCK_PROVIDER_DETAILS: Record<string, ProviderDetail> = {
         required: true,
         secret: true,
         placeholder: "",
+        description:
+          "Found in Azure Portal > App Registrations > Certificates & Secrets",
       },
     ],
     config_fields: [
@@ -562,6 +585,7 @@ export const MOCK_PROVIDER_DETAILS: Record<string, ProviderDetail> = {
         required: true,
         secret: false,
         placeholder: "SCW...",
+        description: "Found in Scaleway Console > IAM > API Keys",
       },
       {
         key: "secret_key",
@@ -569,6 +593,7 @@ export const MOCK_PROVIDER_DETAILS: Record<string, ProviderDetail> = {
         required: true,
         secret: true,
         placeholder: "",
+        description: "Shown once when creating the API key",
       },
       {
         key: "project_id",
@@ -576,6 +601,7 @@ export const MOCK_PROVIDER_DETAILS: Record<string, ProviderDetail> = {
         required: true,
         secret: false,
         placeholder: "",
+        description: "Found in Scaleway Console > Project Settings",
       },
     ],
     config_fields: [
@@ -616,6 +642,7 @@ export const MOCK_PROVIDER_DETAILS: Record<string, ProviderDetail> = {
         required: true,
         secret: true,
         placeholder: "",
+        description: "Found in Vast.ai > Account > API Key",
       },
     ],
     config_fields: [],

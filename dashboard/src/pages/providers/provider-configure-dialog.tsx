@@ -99,16 +99,22 @@ export function ProviderConfigureDialog({
           </p>
           <div className="space-y-3">
             {provider.credential_fields.map((field) => (
-              <Input
-                key={field.key}
-                label={field.label + (field.required ? " *" : "")}
-                type={field.secret ? "password" : "text"}
-                placeholder={field.placeholder || undefined}
-                value={credentials[field.key] ?? ""}
-                onChange={(e) => updateCredential(field.key, e.target.value)}
-                error={errors[field.key]}
-                autoComplete="off"
-              />
+              <div key={field.key}>
+                <Input
+                  label={field.label + (field.required ? " *" : "")}
+                  type={field.secret ? "password" : "text"}
+                  placeholder={field.placeholder || undefined}
+                  value={credentials[field.key] ?? ""}
+                  onChange={(e) => updateCredential(field.key, e.target.value)}
+                  error={errors[field.key]}
+                  autoComplete="off"
+                />
+                {field.description && (
+                  <p className="mt-1 text-xs text-text-muted">
+                    {field.description}
+                  </p>
+                )}
+              </div>
             ))}
           </div>
         </div>

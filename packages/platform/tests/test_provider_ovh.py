@@ -74,7 +74,6 @@ def _patch_openstack(monkeypatch):
 
     import artenic_ai_platform.providers.ovh as ovh_mod
 
-    monkeypatch.setattr(ovh_mod, "_HAS_OPENSTACK", True)
     monkeypatch.setattr(ovh_mod, "openstack", mock_openstack)
 
 
@@ -87,7 +86,7 @@ def _build_provider():
         username="user",
         password="pass",
         project_id="proj-123",
-        region="GRA11",
+        region="GRA",
         image_id="img-123",
         network_id="net-456",
     )
@@ -103,15 +102,8 @@ class TestOVHProviderInit:
         p = _build_provider()
         assert p._auth_url == "https://auth.cloud.ovh.net/v3"
         assert p._username == "user"
-        assert p._region == "GRA11"
+        assert p._region == "GRA"
         assert p._container_name == "artenic-training"
-
-    def test_init_raises_without_openstack(self, monkeypatch):
-        import artenic_ai_platform.providers.ovh as ovh_mod
-
-        monkeypatch.setattr(ovh_mod, "_HAS_OPENSTACK", False)
-        with pytest.raises(ImportError, match="openstacksdk"):
-            _build_provider()
 
 
 class TestOVHProviderName:

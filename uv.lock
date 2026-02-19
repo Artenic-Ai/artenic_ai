@@ -134,6 +134,7 @@ dependencies = [
     { name = "fastapi" },
     { name = "httpx" },
     { name = "mlflow" },
+    { name = "openstacksdk" },
     { name = "opentelemetry-api" },
     { name = "opentelemetry-exporter-prometheus" },
     { name = "opentelemetry-instrumentation-fastapi" },
@@ -162,9 +163,6 @@ gcp = [
 k8s = [
     { name = "kubernetes" },
 ]
-openstack = [
-    { name = "openstacksdk" },
-]
 test = [
     { name = "aiosqlite" },
     { name = "httpx" },
@@ -189,7 +187,7 @@ requires-dist = [
     { name = "httpx", marker = "extra == 'test'", specifier = ">=0.27" },
     { name = "kubernetes", marker = "extra == 'k8s'", specifier = ">=28.0" },
     { name = "mlflow", specifier = ">=2.17" },
-    { name = "openstacksdk", marker = "extra == 'openstack'", specifier = ">=4.0" },
+    { name = "openstacksdk", specifier = ">=4.0" },
     { name = "opentelemetry-api", specifier = ">=1.29" },
     { name = "opentelemetry-exporter-prometheus", specifier = ">=0.50b0" },
     { name = "opentelemetry-instrumentation-fastapi", specifier = ">=0.50b0" },
@@ -200,7 +198,7 @@ requires-dist = [
     { name = "sqlalchemy", extras = ["asyncio"], specifier = ">=2.0" },
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.32" },
 ]
-provides-extras = ["test", "gcp", "aws", "azure", "openstack", "k8s"]
+provides-extras = ["test", "gcp", "aws", "azure", "k8s"]
 
 [[package]]
 name = "artenic-ai-sdk"

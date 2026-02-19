@@ -27,6 +27,7 @@ class CredentialFieldOut(BaseModel):
     required: bool
     secret: bool
     placeholder: str = ""
+    description: str = ""
 
 
 class ConfigFieldOut(BaseModel):
