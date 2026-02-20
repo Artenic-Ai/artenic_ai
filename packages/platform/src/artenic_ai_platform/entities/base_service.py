@@ -101,7 +101,7 @@ class GenericEntityService(Generic[T]):  # noqa: UP046
         """Compute the next version number for *name*."""
         result = await self._session.execute(
             select(func.coalesce(func.max(self._model_class.version), 0)).where(  # type: ignore[attr-defined]
-                self._model_class.name == name
-            )  # type: ignore[attr-defined]
+                self._model_class.name == name  # type: ignore[attr-defined]
+            )
         )
         return int(result.scalar_one()) + 1
