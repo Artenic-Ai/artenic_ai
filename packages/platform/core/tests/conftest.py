@@ -17,8 +17,8 @@ from artenic_ai_platform.db.engine import (
 )
 from artenic_ai_platform.deps import build_get_db
 from artenic_ai_platform.entities.datasets.storage import FilesystemStorage
-from artenic_ai_platform_providers.mock import MockProvider
 from artenic_ai_platform.settings import PlatformSettings
+from artenic_ai_platform_providers.mock import MockProvider
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator

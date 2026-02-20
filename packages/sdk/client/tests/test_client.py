@@ -7,7 +7,6 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from artenic_ai_sdk_client import PlatformClient
 from artenic_ai_sdk.exceptions import (
     AuthenticationError,
     PlatformError,
@@ -16,6 +15,7 @@ from artenic_ai_sdk.exceptions import (
 )
 from artenic_ai_sdk.schemas import ModelConfig, ModelMetadata
 from artenic_ai_sdk.types import ModelFramework
+from artenic_ai_sdk_client import PlatformClient
 
 
 def _mock_response(

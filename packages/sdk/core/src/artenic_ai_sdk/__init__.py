@@ -121,7 +121,7 @@ __version__ = "0.7.0"
 
 # Ensemble (pip install artenic-ai-sdk[ensemble])
 try:
-    from artenic_ai_sdk_ensemble import (  # type: ignore[import-not-found]
+    from artenic_ai_sdk_ensemble import (
         DynamicWeighting,
         EnsembleManager,
         EnsembleStrategy,
@@ -136,7 +136,7 @@ except ImportError:
 
 # Training (pip install artenic-ai-sdk[training])
 try:
-    from artenic_ai_sdk_training import (  # type: ignore[import-not-found]
+    from artenic_ai_sdk_training import (
         CallbackRunner,
         TrainingCallback,
         TrainingConfig,
@@ -148,7 +148,7 @@ except ImportError:
 
 # Client (pip install artenic-ai-sdk[client])
 try:
-    from artenic_ai_sdk_client import PlatformClient  # type: ignore[import-not-found]
+    from artenic_ai_sdk_client import PlatformClient
 except ImportError:
     pass
 

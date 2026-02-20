@@ -9,15 +9,6 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from artenic_ai_sdk.base_model import BaseModel
-from artenic_ai_sdk_ensemble import (
-    DynamicWeighting,
-    EnsembleManager,
-    EvolutionPolicy,
-    MajorityVoting,
-    MetaLearner,
-    Stacking,
-    WeightedAverage,
-)
 from artenic_ai_sdk.exceptions import (
     NoModelsRegisteredError,
     QuorumNotMetError,
@@ -32,6 +23,15 @@ from artenic_ai_sdk.schemas import (
 from artenic_ai_sdk.types import (
     EnsembleStrategyType,
     ModelFramework,
+)
+from artenic_ai_sdk_ensemble import (
+    DynamicWeighting,
+    EnsembleManager,
+    EvolutionPolicy,
+    MajorityVoting,
+    MetaLearner,
+    Stacking,
+    WeightedAverage,
 )
 
 # =============================================================================

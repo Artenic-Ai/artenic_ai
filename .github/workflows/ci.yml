@@ -68,7 +68,7 @@ jobs:
         run: uv python install ${{ env.PYTHON_VERSION }}
 
       - name: Install dependencies
-        run: uv sync --dev --package artenic-ai-sdk
+        run: uv sync --dev --package artenic-ai-sdk --package artenic-ai-sdk-ensemble --package artenic-ai-sdk-training --package artenic-ai-sdk-client
 
       - name: mypy (SDK)
         run: uv run mypy packages/sdk/
@@ -91,7 +91,7 @@ jobs:
         run: uv python install ${{ env.PYTHON_VERSION }}
 
       - name: Install dependencies
-        run: uv sync --dev --package artenic-ai-platform
+        run: uv sync --dev --package artenic-ai-platform --package artenic-ai-platform-providers --package artenic-ai-platform-training
 
       - name: mypy (Platform)
         run: uv run mypy packages/platform/
@@ -141,7 +141,7 @@ jobs:
         run: uv python install ${{ matrix.python-version }}
 
       - name: Install dependencies
-        run: uv sync --dev --package artenic-ai-sdk
+        run: uv sync --dev --package artenic-ai-sdk --package artenic-ai-sdk-ensemble --package artenic-ai-sdk-training --package artenic-ai-sdk-client
 
       - name: Run tests with coverage
         run: |
@@ -184,7 +184,7 @@ jobs:
         run: uv python install ${{ matrix.python-version }}
 
       - name: Install dependencies
-        run: uv sync --dev --package artenic-ai-platform
+        run: uv sync --dev --package artenic-ai-platform --package artenic-ai-platform-providers --package artenic-ai-platform-training
 
       - name: Run tests with coverage
         run: |

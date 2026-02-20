@@ -79,6 +79,9 @@ select = [
     "RUF",  # ruff-specific rules
 ]
 
+[tool.ruff.lint.per-file-ignores]
+"*/__init__.py" = ["F401", "SIM105"]
+
 [tool.ruff.lint.isort]
 known-first-party = [
     "artenic_ai_sdk",

@@ -9,12 +9,12 @@ import pytest
 from httpx import ASGITransport, AsyncClient
 
 from artenic_ai_platform.app import _lifespan, create_app
+from artenic_ai_platform.settings import PlatformSettings
 from artenic_ai_platform_providers.hub.schemas import (
     CatalogComputeFlavor,
     CatalogStorageTier,
 )
 from artenic_ai_platform_providers.hub.service import _clear_catalog_cache
-from artenic_ai_platform.settings import PlatformSettings
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator

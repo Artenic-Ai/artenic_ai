@@ -148,8 +148,8 @@ class TestLifespan:
             assert isinstance(app.state.secret_manager, SecretManager)
 
     async def test_lifespan_registers_local_provider(self) -> None:
-        from artenic_ai_platform_providers.local import LocalProvider
         from artenic_ai_platform.settings import LocalConfig
+        from artenic_ai_platform_providers.local import LocalProvider
 
         settings = PlatformSettings(
             database_url="sqlite+aiosqlite://",
