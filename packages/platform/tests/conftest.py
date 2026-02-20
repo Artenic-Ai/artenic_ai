@@ -16,6 +16,7 @@ from artenic_ai_platform.db.engine import (
     create_tables,
 )
 from artenic_ai_platform.deps import build_get_db
+from artenic_ai_platform.entities.datasets.storage import FilesystemStorage
 from artenic_ai_platform.providers.mock import MockProvider
 from artenic_ai_platform.settings import PlatformSettings
 
@@ -66,6 +67,7 @@ async def client(app: FastAPI, settings: PlatformSettings) -> AsyncGenerator[Asy
 
     app.state.budget_manager_factory = _budget_factory
     app.state.get_db = build_get_db(session_factory)
+    app.state.dataset_storage = FilesystemStorage(base_dir="/tmp/test-datasets")
 
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as c:

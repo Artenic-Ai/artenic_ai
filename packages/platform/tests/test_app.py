@@ -8,15 +8,15 @@ from httpx import ASGITransport, AsyncClient
 
 from artenic_ai_platform.app import _build_dataset_storage, _lifespan, create_app
 from artenic_ai_platform.config.crypto import SecretManager
-from artenic_ai_platform.datasets.storage import (
+from artenic_ai_platform.db.engine import create_async_engine, create_tables
+from artenic_ai_platform.deps import build_get_db, get_db
+from artenic_ai_platform.entities.datasets.storage import (
     AzureBlobStorage,
     FilesystemStorage,
     GCSStorage,
     OVHSwiftStorage,
     S3Storage,
 )
-from artenic_ai_platform.db.engine import create_async_engine, create_tables
-from artenic_ai_platform.deps import build_get_db, get_db
 from artenic_ai_platform.settings import DatasetConfig, DatasetStorageConfig, PlatformSettings
 
 # ======================================================================
@@ -227,7 +227,7 @@ class TestLifespan:
 
             async with app.state.engine.connect() as conn:
                 tables = await conn.run_sync(lambda sync_conn: inspect(sync_conn).get_table_names())
-            assert len(tables) == 22
+            assert len(tables) == 31
 
     async def test_lifespan_get_db_works(self) -> None:
         settings = PlatformSettings(

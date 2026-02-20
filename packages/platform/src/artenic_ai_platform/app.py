@@ -14,8 +14,14 @@ from artenic_ai_platform.ab_testing.router import router as ab_testing_router
 from artenic_ai_platform.budget.router import router as budget_router
 from artenic_ai_platform.budget.service import BudgetManager
 from artenic_ai_platform.config.crypto import SecretManager
-from artenic_ai_platform.datasets.router import router as dataset_router
-from artenic_ai_platform.datasets.storage import (
+from artenic_ai_platform.db.engine import (
+    create_async_engine,
+    create_session_factory,
+    create_tables,
+)
+from artenic_ai_platform.deps import build_get_db
+from artenic_ai_platform.entities.datasets.router import router as entity_dataset_router
+from artenic_ai_platform.entities.datasets.storage import (
     AzureBlobStorage,
     FilesystemStorage,
     GCSStorage,
@@ -23,13 +29,11 @@ from artenic_ai_platform.datasets.storage import (
     S3Storage,
     StorageBackend,
 )
-from artenic_ai_platform.db.engine import (
-    create_async_engine,
-    create_session_factory,
-    create_tables,
-)
-from artenic_ai_platform.deps import build_get_db
-from artenic_ai_platform.ensemble.router import router as ensemble_router
+from artenic_ai_platform.entities.ensembles.router import router as entity_ensemble_router
+from artenic_ai_platform.entities.features.router import router as entity_feature_router
+from artenic_ai_platform.entities.lineage.router import router as entity_lineage_router
+from artenic_ai_platform.entities.models.router import router as entity_model_router
+from artenic_ai_platform.entities.runs.router import router as entity_run_router
 from artenic_ai_platform.events.event_bus import EventBus
 from artenic_ai_platform.events.ws import router as ws_router
 from artenic_ai_platform.health.monitor import HealthMonitor
@@ -46,7 +50,6 @@ from artenic_ai_platform.middleware.metrics import MetricsMiddleware
 from artenic_ai_platform.middleware.rate_limit import RateLimitMiddleware
 from artenic_ai_platform.providers.mock import MockProvider
 from artenic_ai_platform.providers_hub.router import router as providers_hub_router
-from artenic_ai_platform.registry.router import router as registry_router
 from artenic_ai_platform.routes.config import router as config_router
 from artenic_ai_platform.settings import PlatformSettings
 from artenic_ai_platform.tracking.mlflow_client import MLflowTracker
@@ -223,14 +226,17 @@ def create_app(settings: PlatformSettings | None = None) -> FastAPI:
 
     # ----- Routers ---------------------------------------------------
     app.include_router(health_router)
-    app.include_router(registry_router)
+    app.include_router(entity_dataset_router)
+    app.include_router(entity_model_router)
+    app.include_router(entity_run_router)
     app.include_router(config_router)
     app.include_router(training_router)
     app.include_router(budget_router)
     app.include_router(inference_router)
-    app.include_router(ensemble_router)
+    app.include_router(entity_ensemble_router)
+    app.include_router(entity_feature_router)
+    app.include_router(entity_lineage_router)
     app.include_router(ab_testing_router)
-    app.include_router(dataset_router)
     app.include_router(providers_hub_router)
     app.include_router(ws_router)
 

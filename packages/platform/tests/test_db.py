@@ -60,6 +60,16 @@ EXPECTED_TABLES = sorted(
         "artenic_dataset_versions",
         "artenic_dataset_files",
         "artenic_dataset_lineage",
+        # New ml_* entity tables
+        "ml_datasets",
+        "ml_dataset_files",
+        "ml_models",
+        "ml_runs",
+        "ml_run_io",
+        "ml_ensembles",
+        "ml_ensemble_models",
+        "ml_features",
+        "ml_lineage",
     ]
 )
 

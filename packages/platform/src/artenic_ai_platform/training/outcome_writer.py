@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Any
 
 from sqlalchemy import select
 
-from artenic_ai_platform.db.models import TrainingJob, TrainingOutcomeRecord
+from artenic_ai_platform.db.models import MLRun, TrainingJob, TrainingOutcomeRecord
 from artenic_ai_platform.providers.base import JobStatus
 
 if TYPE_CHECKING:
@@ -92,6 +92,20 @@ class OutcomeWriter:
         self._session.add(outcome)
         await self._session.flush()
         await self._session.commit()
+
+        # --- Update associated MLRun (if exists) -------------------------
+        run_id = f"run:{job_id}"
+        run_result = await self._session.execute(
+            select(MLRun).where(MLRun.id == run_id)
+        )
+        ml_run = run_result.scalar_one_or_none()
+        if ml_run is not None:
+            ml_run.status = "completed" if outcome.success else "failed"
+            ml_run.completed_at = job.completed_at
+            ml_run.duration_seconds = job.duration_seconds
+            if job.metrics:
+                ml_run.metrics = job.metrics
+            await self._session.commit()
 
         logger.info("Wrote outcome for job %s (success=%s)", job_id, outcome.success)
         return self._to_dict(outcome)

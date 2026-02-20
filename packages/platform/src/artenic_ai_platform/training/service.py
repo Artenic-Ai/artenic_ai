@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Any
 
 from sqlalchemy import select, update
 
-from artenic_ai_platform.db.models import TrainingJob
+from artenic_ai_platform.db.models import MLRun, TrainingJob
 from artenic_ai_platform.providers.base import (
     CloudJobStatus,
     JobStatus,
@@ -165,6 +165,17 @@ class TrainingManager:
                 started_at=now,
             )
         )
+        await self._session.commit()
+
+        # --- Create MLRun metadata record --------------------------------
+        run = MLRun(
+            id=f"run:{job_id}",
+            config=spec.config,
+            status="running",
+            triggered_by=provider,
+            started_at=now,
+        )
+        self._session.add(run)
         await self._session.commit()
 
         logger.info(

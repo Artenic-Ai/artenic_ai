@@ -1,4 +1,4 @@
-"""Tests for artenic_ai_platform.datasets.storage — all backends."""
+"""Tests for artenic_ai_platform.entities.datasets.storage — all backends."""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ import pytest
 if TYPE_CHECKING:
     from pathlib import Path
 
-from artenic_ai_platform.datasets.storage import (
+from artenic_ai_platform.entities.datasets.storage import (
     AzureBlobStorage,
     FilesystemStorage,
     GCSStorage,

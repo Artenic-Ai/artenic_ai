@@ -1,4 +1,4 @@
-"""Storage backends for dataset files.
+"""Storage backends for dataset and artifact files.
 
 Provides an abstract ``StorageBackend`` and concrete implementations:
 
