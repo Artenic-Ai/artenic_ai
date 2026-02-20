@@ -6,8 +6,8 @@ Only the **latest minor version** receives security patches.
 
 | Version | Supported          |
 |---------|--------------------|
-| 0.5.x   | Yes                |
-| < 0.5   | No                 |
+| 0.7.x   | Yes                |
+| < 0.7   | No                 |
 
 ## Reporting a Vulnerability
 
@@ -36,8 +36,13 @@ or mitigation within **7 days** for confirmed issues.
 
 This policy covers the following components:
 
-- `packages/sdk/` — Artenic AI SDK
-- `packages/platform/` — Artenic AI Platform
+- `packages/sdk/core/` — Artenic AI SDK (core contracts, schemas, types)
+- `packages/sdk/ensemble/` — Artenic AI SDK Ensemble (strategies)
+- `packages/sdk/training/` — Artenic AI SDK Training (callbacks, serialization)
+- `packages/sdk/client/` — Artenic AI SDK Client (HTTP client)
+- `packages/platform/core/` — Artenic AI Platform (gateway, registry, datasets)
+- `packages/platform/providers/` — Artenic AI Platform Providers (cloud integrations, catalog)
+- `packages/platform/training/` — Artenic AI Platform Training (orchestration, MLflow)
 - `packages/cli/` — Artenic AI CLI
 - `packages/optimizer/` — Artenic Optimizer
 - `dashboard/` — Artenic Dashboard

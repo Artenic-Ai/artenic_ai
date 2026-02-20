@@ -1,0 +1,25 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "artenic-ai-sdk-training"
+version = "0.7.0"
+description = "Training utilities for the Artenic AI SDK"
+readme = "../../../README.md"
+license = "Apache-2.0"
+requires-python = ">=3.12"
+authors = [
+    { name = "Artenic Cloud", email = "dev@artenic.cloud" },
+]
+
+dependencies = [
+    "artenic-ai-sdk>=0.7.0",
+]
+
+[project.optional-dependencies]
+torch = ["torch>=2.0", "safetensors>=0.4"]
+onnx = ["onnx>=1.15", "onnxruntime>=1.17"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/artenic_ai_sdk_training"]

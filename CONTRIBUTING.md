@@ -32,19 +32,29 @@ dev tools (pytest, ruff, mypy, pre-commit).
 ### Running Tests
 
 ```bash
-# All tests
+# All tests (2738)
 just test
 
 # With coverage
 just test-cov
 
-# Specific package
-just test-sdk
-just test-platform
-just test-cli
+# Full package suites
+just test-sdk               # all SDK (610 tests)
+just test-platform          # all Platform (1900 tests)
+just test-cli               # CLI (226 tests)
+just test-optimizer         # Optimizer (2 tests)
+
+# Granular sub-package testing
+just test-sdk-core            # SDK core (332 tests)
+just test-sdk-ensemble        # SDK ensemble (101 tests)
+just test-sdk-training        # SDK training (150 tests)
+just test-sdk-client          # SDK client (27 tests)
+just test-platform-core       # Platform core (668 tests)
+just test-platform-providers  # Platform providers (1107 tests)
+just test-platform-training   # Platform training (125 tests)
 
 # Specific test file
-just test packages/sdk/tests/test_something.py -v
+just test packages/sdk/core/tests/test_something.py -v
 ```
 
 ### Code Quality
@@ -149,15 +159,19 @@ to the platform URL.
 
 Types: `feat`, `fix`, `docs`, `test`, `refactor`, `ci`, `chore`
 
-Scopes: `sdk`, `platform`, `cli`, `optimizer`, `dashboard`, `infra`
+Scopes: `sdk`, `sdk-ensemble`, `sdk-training`, `sdk-client`, `platform`, `platform-providers`, `platform-training`, `cli`, `optimizer`, `dashboard`, `infra`
 
 Examples:
 
 ```
 feat(sdk): add BaseModel contract
-feat(platform): add AWS provider with spot preemption handling
+feat(sdk-ensemble): add stacking strategy
+feat(sdk-training): add gradient checkpointing callback
+feat(platform): add dataset versioning
+feat(platform-providers): add AWS provider with spot preemption handling
+feat(platform-training): add cost predictor
 fix(platform): handle null provider response
-test(platform): add budget enforcement edge cases
+test(platform-providers): add budget enforcement edge cases
 ci: add platform type-check and test jobs
 ```
 
@@ -184,13 +198,13 @@ ci: add platform type-check and test jobs
 
 ## Adding a New Cloud Provider
 
-1. Create `packages/platform/src/artenic_ai_platform/providers/your_provider.py`
+1. Create `packages/platform/providers/src/artenic_ai_platform_providers/your_provider.py`
 2. Extend `CloudProvider` from `cloud_base.py`
 3. Implement the abstract hooks: `_connect`, `_disconnect`, `_upload_code`, `_provision_and_start`, `_poll_provider`, `_collect_artifacts`, `_cleanup_compute`, `_cancel_provider_job`
-4. Add provider settings to `settings.py` (nested `BaseModel` with `enabled: bool = False`)
-5. Add optional dependency group in `packages/platform/pyproject.toml`
-6. Write tests (mock the provider SDK, test all lifecycle methods)
-7. Register the provider in `app.py` lifespan
+4. Add provider settings to `packages/platform/core/src/artenic_ai_platform/settings/` (nested `BaseModel` with `enabled: bool = False`)
+5. Add optional dependency group in `packages/platform/providers/pyproject.toml`
+6. Write tests in `packages/platform/providers/tests/` (mock the provider SDK, test all lifecycle methods)
+7. Register the provider in `packages/platform/core/src/artenic_ai_platform/app.py` lifespan
 
 ## License
 

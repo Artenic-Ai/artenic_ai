@@ -120,7 +120,7 @@ jobs:
         run: uv run mypy packages/cli/
 
   # =========================================================================
-  # Test — SDK
+  # Test — SDK (core + ensemble + training + client)
   # =========================================================================
   test-sdk:
     name: Test SDK (Python ${{ matrix.python-version }})
@@ -145,8 +145,11 @@ jobs:
 
       - name: Run tests with coverage
         run: |
-          uv run pytest packages/sdk/tests/ \
+          uv run pytest packages/sdk/ \
             --cov=artenic_ai_sdk \
+            --cov=artenic_ai_sdk_ensemble \
+            --cov=artenic_ai_sdk_training \
+            --cov=artenic_ai_sdk_client \
             --cov-report=xml:coverage-sdk.xml \
             --cov-report=term-missing \
             --cov-fail-under=100 \
@@ -185,8 +188,10 @@ jobs:
 
       - name: Run tests with coverage
         run: |
-          uv run pytest packages/platform/tests/ \
+          uv run pytest packages/platform/ \
             --cov=artenic_ai_platform \
+            --cov=artenic_ai_platform_providers \
+            --cov=artenic_ai_platform_training \
             --cov-report=xml:coverage-platform.xml \
             --cov-report=term-missing \
             --cov-fail-under=100 \

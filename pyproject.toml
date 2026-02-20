@@ -1,6 +1,6 @@
 [project]
 name = "artenic-ai"
-version = "0.6.0"
+version = "0.7.0"
 description = "Open-Source ML Platform — Train, Serve & Scale AI Models"
 readme = "README.md"
 license = "Apache-2.0"
@@ -14,15 +14,20 @@ managed = true
 
 [tool.uv.workspace]
 members = [
-    "packages/sdk",
-    "packages/platform",
+    "packages/sdk/*",
+    "packages/platform/*",
     "packages/cli",
     "packages/optimizer",
 ]
 
 [tool.uv.sources]
 artenic-ai-sdk = { workspace = true }
+artenic-ai-sdk-ensemble = { workspace = true }
+artenic-ai-sdk-training = { workspace = true }
+artenic-ai-sdk-client = { workspace = true }
 artenic-ai-platform = { workspace = true }
+artenic-ai-platform-providers = { workspace = true }
+artenic-ai-platform-training = { workspace = true }
 artenic-ai-cli = { workspace = true }
 artenic-optimizer = { workspace = true }
 
@@ -49,8 +54,13 @@ dev = [
 line-length = 100
 target-version = "py312"
 src = [
-    "packages/sdk/src",
-    "packages/platform/src",
+    "packages/sdk/core/src",
+    "packages/sdk/ensemble/src",
+    "packages/sdk/training/src",
+    "packages/sdk/client/src",
+    "packages/platform/core/src",
+    "packages/platform/providers/src",
+    "packages/platform/training/src",
     "packages/cli/src",
     "packages/optimizer/src",
 ]
@@ -72,7 +82,12 @@ select = [
 [tool.ruff.lint.isort]
 known-first-party = [
     "artenic_ai_sdk",
+    "artenic_ai_sdk_ensemble",
+    "artenic_ai_sdk_training",
+    "artenic_ai_sdk_client",
     "artenic_ai_platform",
+    "artenic_ai_platform_providers",
+    "artenic_ai_platform_training",
     "artenic_ai_cli",
     "artenic_optimizer",
 ]
@@ -97,8 +112,13 @@ warn_redundant_casts = true
 warn_unused_ignores = true
 explicit_package_bases = true
 mypy_path = [
-    "packages/sdk/src",
-    "packages/platform/src",
+    "packages/sdk/core/src",
+    "packages/sdk/ensemble/src",
+    "packages/sdk/training/src",
+    "packages/sdk/client/src",
+    "packages/platform/core/src",
+    "packages/platform/providers/src",
+    "packages/platform/training/src",
     "packages/cli/src",
     "packages/optimizer/src",
 ]
@@ -179,8 +199,13 @@ ignore_missing_imports = true
 # ===========================================================================
 [tool.pytest.ini_options]
 testpaths = [
-    "packages/sdk/tests",
-    "packages/platform/tests",
+    "packages/sdk/core/tests",
+    "packages/sdk/ensemble/tests",
+    "packages/sdk/training/tests",
+    "packages/sdk/client/tests",
+    "packages/platform/core/tests",
+    "packages/platform/providers/tests",
+    "packages/platform/training/tests",
     "packages/cli/tests",
     "packages/optimizer/tests",
     "tests",
@@ -198,8 +223,13 @@ markers = [
 [tool.coverage.run]
 concurrency = ["greenlet", "thread"]
 source = [
-    "packages/sdk/src",
-    "packages/platform/src",
+    "packages/sdk/core/src",
+    "packages/sdk/ensemble/src",
+    "packages/sdk/training/src",
+    "packages/sdk/client/src",
+    "packages/platform/core/src",
+    "packages/platform/providers/src",
+    "packages/platform/training/src",
     "packages/cli/src",
     "packages/optimizer/src",
 ]

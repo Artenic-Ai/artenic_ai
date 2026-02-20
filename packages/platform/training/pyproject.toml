@@ -1,0 +1,23 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "artenic-ai-platform-training"
+version = "0.7.0"
+description = "Artenic AI Platform — Training Orchestration, Job Management & MLflow"
+readme = "../../../README.md"
+license = "Apache-2.0"
+requires-python = ">=3.12"
+authors = [
+    { name = "Artenic Cloud", email = "dev@artenic.cloud" },
+]
+
+dependencies = [
+    "artenic-ai-platform",
+    "artenic-ai-platform-providers",
+    "mlflow>=2.17",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/artenic_ai_platform_training"]

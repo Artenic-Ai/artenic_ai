@@ -45,69 +45,119 @@ Try it now: **[ai.artenic.ch](https://ai.artenic.ch)** — full demo dashboard w
 
 ## Project Structure
 
-This is a [uv](https://docs.astral.sh/uv/) workspace monorepo:
+This is a [uv](https://docs.astral.sh/uv/) workspace monorepo with 9 Python packages:
 
 ```
 artenic_ai/
 ├── packages/
-│   ├── sdk/           # Shared SDK — BaseModel contract, schemas, ensemble management
-│   ├── platform/      # Central platform — Gateway, Registry, Orchestrator, Monitoring
-│   ├── cli/           # Command-line interface — manage platform via terminal
-│   └── optimizer/     # Training optimizer — LTR-based instance selection (stub)
-├── dashboard/         # React dashboard — ai.artenic.ch
-├── pyproject.toml     # Workspace root configuration
-├── justfile           # Development commands
+│   ├── sdk/
+│   │   ├── core/        # BaseModel contract, schemas, types, exceptions, decorators
+│   │   ├── ensemble/    # EnsembleManager, 5 strategies (weighted avg, stacking, …)
+│   │   ├── training/    # 8 training callbacks, checkpointing, serialization
+│   │   └── client/      # PlatformClient — async HTTP client (httpx)
+│   ├── platform/
+│   │   ├── core/        # FastAPI gateway, middleware, registry, datasets, budget, events
+│   │   ├── providers/   # 16 cloud training providers, Provider Hub, public catalog
+│   │   └── training/    # Training orchestration, job polling, MLflow tracking
+│   ├── cli/             # Command-line interface — 12 command groups, 60+ subcommands
+│   └── optimizer/       # Training optimizer — LTR-based instance selection (stub)
+├── dashboard/           # React dashboard — ai.artenic.ch
+├── pyproject.toml       # Workspace root configuration
+├── justfile             # Development commands
 └── docker-compose.dev.yml  # PostgreSQL + MLflow
 ```
 
 ### Package Status
 
-| Package | Description | Status | Tests | Coverage |
-|---------|-------------|--------|-------|----------|
-| `sdk` | BaseModel contract, schemas, ensemble, serialization, decorators | **Complete** | 610 | 100% |
-| `platform` | FastAPI gateway, registry, training, datasets, providers, public catalog | **Complete** | 1892 | 100% |
-| `cli` | Command-line interface — 12 command groups, 60+ subcommands | **Complete** | 224 | 100% |
-| `optimizer` | LTR-based training instance selection | Stub | — | — |
-| `dashboard` | React admin UI — 11 pages, dark theme, demo mode | **Complete** | 68 | — |
+| Package | PyPI Name | Tests | Coverage |
+|---------|-----------|-------|----------|
+| `sdk/core` | `artenic-ai-sdk` | 332 | 100% |
+| `sdk/ensemble` | `artenic-ai-sdk-ensemble` | 101 | 100% |
+| `sdk/training` | `artenic-ai-sdk-training` | 150 | 100% |
+| `sdk/client` | `artenic-ai-sdk-client` | 27 | 100% |
+| `platform/core` | `artenic-ai-platform` | 668 | 100% |
+| `platform/providers` | `artenic-ai-platform-providers` | 1107 | 100% |
+| `platform/training` | `artenic-ai-platform-training` | 125 | 100% |
+| `cli` | `artenic-ai-cli` | 226 | 100% |
+| `optimizer` | `artenic-optimizer` | 2 | 100% |
+| `dashboard` | — | 68 | — |
+| **Total** | | **2738** | |
 
 ### Dependency Graph
 
 ```
-sdk (leaf — no internal deps)
- ├── platform (depends on sdk)
- ├── cli (depends on sdk)
- └── optimizer (depends on sdk)
+sdk/core (leaf — no internal deps)
+ ├── sdk/ensemble ──────────┐
+ ├── sdk/training ──────────┤
+ ├── sdk/client ────────────┤
+ │                          ▼
+ ├── platform/core (depends on sdk/core)
+ │    ├── platform/providers (depends on platform/core)
+ │    └── platform/training  (depends on platform/core + platform/providers)
+ │
+ ├── cli (depends on sdk/core + platform/core)
+ └── optimizer (depends on sdk/core)
+```
+
+Install extras on `artenic-ai-sdk` to pull in sub-packages:
+
+```bash
+pip install artenic-ai-sdk              # core only
+pip install artenic-ai-sdk[ensemble]    # + ensemble strategies
+pip install artenic-ai-sdk[training]    # + training callbacks
+pip install artenic-ai-sdk[client]      # + HTTP client
+pip install artenic-ai-sdk[all]         # everything
 ```
 
 ## Key Features
 
-### SDK (`packages/sdk/`)
+### SDK Core (`packages/sdk/core/`)
 
 - **BaseModel ABC** with 7-state lifecycle and Template Method pattern
-- **Ensemble management** — 5 strategies (weighted average, dynamic weighting, meta-learner, majority voting, stacking)
-- **8 training callbacks** — early stopping, checkpointing, LR finder, mixed precision, gradient checkpointing, data versioning, distributed training, data splitting
 - **7+ decorators** — `@track_inference`, `@retry`, `@timeout`, `@circuit_breaker`, `@cache_inference`, `@rate_limit`, `@validate_input`
-- **Model serialization** — 6 formats (safetensors, ONNX, PyTorch, TorchScript, pickle, joblib)
 - **30+ typed exceptions** with rich context
+- **Observability** — MetricsCollector, StructuredLogger, correlation context
+- **Config management** — YAML + env var loading, version tracking, diff
+
+### SDK Ensemble (`packages/sdk/ensemble/`)
+
+- **EnsembleManager** — orchestrates parallel inference, strategy selection, versioning
+- **5 strategies** — weighted average, dynamic weighting, meta-learner, majority voting, stacking
+
+### SDK Training (`packages/sdk/training/`)
+
+- **8 training callbacks** — early stopping, checkpointing, LR finder, mixed precision, gradient checkpointing, data versioning, distributed training, data splitting
+- **Model serialization** — 6 formats (safetensors, ONNX, PyTorch, TorchScript, pickle, joblib)
+
+### SDK Client (`packages/sdk/client/`)
+
 - **PlatformClient** — async HTTP client with retry and rate limit handling
 
-### Platform (`packages/platform/`)
+### Platform Core (`packages/platform/core/`)
 
 - **FastAPI gateway** with full middleware stack (auth, rate limit, CORS, correlation ID, error handling, metrics)
 - **Model registry** — CRUD, promote/retire lifecycle, MLflow sync
-- **Training orchestrator** — dispatch locally or to 16 cloud providers, job polling, spot preemption handling
-- **16 training providers** — Local (subprocess), GCP, AWS, Azure, OCI, OVH, Infomaniak, Hetzner, Scaleway, Lambda Labs, RunPod, Vast.ai, CoreWeave, Kubernetes, Mock
 - **Budget governance** — multi-scope (global/service/provider), multi-period (daily/weekly/monthly), enforcement modes (block/warn)
 - **A/B testing** — variant routing, metric aggregation, statistical analysis
 - **Ensemble management** — versioned ensembles with training dispatch
 - **Health monitoring** — background drift detection, error rate tracking, latency percentiles
 - **Dataset management** — CRUD, file upload/download, versioning (SHA-256), auto-stats, tabular preview, lineage tracking
-- **Storage abstraction** — filesystem (default), cloud stubs (S3, GCS, Azure, OVH) — user selects backend per dataset
-- **Providers Hub** — 17 REST endpoints for cloud provider management (list, configure, enable/disable, test connection, storage/compute/regions capabilities, public catalog)
-- **Public Catalog** — real-time pricing & flavors from 7 cloud providers (no auth required), in-memory TTL cache, static fallback for providers without public API
+- **Storage abstraction** — filesystem (default), cloud stubs (S3, GCS, Azure, OVH)
 - **Event system** — async pub/sub EventBus + WebSocket real-time streaming
 - **Settings hot-reload** — encrypted secrets, audit log, runtime configuration
 - **Plugin system** — entry-point discovery for providers, strategies, services
+
+### Platform Providers (`packages/platform/providers/`)
+
+- **16 training providers** — Local, GCP, AWS, Azure, OCI, OVH, Infomaniak, Hetzner, Scaleway, Lambda Labs, RunPod, Vast.ai, CoreWeave, Kubernetes, Mock
+- **Providers Hub** — 17 REST endpoints for cloud provider management (list, configure, enable/disable, test connection, storage/compute/regions capabilities, public catalog)
+- **Public Catalog** — real-time pricing & flavors from 7 cloud providers (no auth required), in-memory TTL cache, static fallback
+
+### Platform Training (`packages/platform/training/`)
+
+- **Training orchestrator** — dispatch locally or to 16 cloud providers, job polling, spot preemption handling
+- **MLflow tracking** — async client for experiment tracking
+- **Cost predictor** — instance cost estimation, outcome persistence
 
 ### CLI (`packages/cli/`)
 
@@ -236,11 +286,19 @@ Run `just` to see all available commands. Key ones:
 |---------|-------------|
 | `just setup` | Install deps + pre-commit hooks |
 | `just check` | Lint + format check + type check |
-| `just test` | Run all tests |
+| `just test` | Run all tests (2738) |
 | `just test-cov` | Run tests with coverage report |
-| `just test-sdk` | Run SDK tests only |
-| `just test-platform` | Run platform tests only |
-| `just test-cli` | Run CLI tests only |
+| `just test-sdk` | Run all SDK tests (610) |
+| `just test-sdk-core` | Run SDK core tests (332) |
+| `just test-sdk-ensemble` | Run SDK ensemble tests (101) |
+| `just test-sdk-training` | Run SDK training tests (150) |
+| `just test-sdk-client` | Run SDK client tests (27) |
+| `just test-platform` | Run all platform tests (1900) |
+| `just test-platform-core` | Run platform core tests (668) |
+| `just test-platform-providers` | Run platform providers tests (1107) |
+| `just test-platform-training` | Run platform training tests (125) |
+| `just test-cli` | Run CLI tests (226) |
+| `just test-optimizer` | Run optimizer tests (2) |
 | `just dev-up` | Start PostgreSQL + MLflow |
 | `just dev-down` | Stop dev services |
 
@@ -312,4 +370,4 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 Apache License 2.0 — see [LICENSE](LICENSE) for details.
 
-Copyright 2026 Artenic Cloud
+Copyright 2026 Artenic_AI

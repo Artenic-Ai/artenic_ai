@@ -63,13 +63,41 @@ test *ARGS:
 test-cov:
     uv run pytest --cov --cov-report=term-missing --cov-report=html --cov-fail-under=100
 
-# Run only SDK tests
+# Run all SDK tests (core + ensemble + training + client)
 test-sdk:
-    uv run pytest packages/sdk/tests/ -v
+    uv run pytest packages/sdk/ -v
 
-# Run only Platform tests
+# Run only SDK core tests
+test-sdk-core:
+    uv run pytest packages/sdk/core/tests/ -v
+
+# Run only SDK ensemble tests
+test-sdk-ensemble:
+    uv run pytest packages/sdk/ensemble/tests/ -v
+
+# Run only SDK training tests
+test-sdk-training:
+    uv run pytest packages/sdk/training/tests/ -v
+
+# Run only SDK client tests
+test-sdk-client:
+    uv run pytest packages/sdk/client/tests/ -v
+
+# Run all Platform tests (core + providers + training)
 test-platform:
-    uv run pytest packages/platform/tests/ -v
+    uv run pytest packages/platform/ -v
+
+# Run only Platform core tests
+test-platform-core:
+    uv run pytest packages/platform/core/tests/ -v
+
+# Run only Platform providers tests
+test-platform-providers:
+    uv run pytest packages/platform/providers/tests/ -v
+
+# Run only Platform training tests
+test-platform-training:
+    uv run pytest packages/platform/training/tests/ -v
 
 # Run only CLI tests
 test-cli:

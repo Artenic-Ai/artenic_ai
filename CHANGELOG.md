@@ -3,6 +3,51 @@
 All notable changes to this project will be documented in this file.
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.7.0] — 2026-02-20
+
+### Step 8 — Monorepo Refactoring: Fine-Grained Packages
+
+#### Architecture — Package Split (4 → 9 packages)
+- **SDK split** from 1 monolithic package into 4:
+  - `artenic-ai-sdk` (core) — BaseModel contract, schemas, types, exceptions, decorators, observability, serialization, testing utilities, config management (332 tests)
+  - `artenic-ai-sdk-ensemble` — EnsembleManager, 5 strategies (WeightedAverage, DynamicWeighting, MetaLearner, MajorityVoting, Stacking), evolution policy (101 tests)
+  - `artenic-ai-sdk-training` — 8 training callbacks, checkpointing, LR finder, mixed precision, gradient checkpointing, data versioning, distributed training, data splitting (150 tests)
+  - `artenic-ai-sdk-client` — PlatformClient async HTTP client (httpx) (27 tests)
+- **Platform split** from 1 monolithic package into 3:
+  - `artenic-ai-platform` (core) — FastAPI gateway, middleware, model registry, datasets, budget, inference, ensemble, A/B testing, health monitor, events, settings, plugins (668 tests)
+  - `artenic-ai-platform-providers` — 16 cloud training providers, Provider Hub REST API, public catalog with 7 fetchers (1107 tests)
+  - `artenic-ai-platform-training` — Training orchestration (TrainingManager), job polling, spot manager, cost predictor, outcome writer, MLflow tracking (125 tests)
+- CLI and Optimizer unchanged
+
+#### Installation — Extras System
+- `pip install artenic-ai-sdk` installs core only (minimal dependencies)
+- `pip install artenic-ai-sdk[ensemble]` adds ensemble strategies
+- `pip install artenic-ai-sdk[training]` adds training callbacks + serialization
+- `pip install artenic-ai-sdk[client]` adds HTTP platform client
+- `pip install artenic-ai-sdk[all]` installs all SDK sub-packages
+- SDK core provides conditional re-exports via `try/except ImportError`
+
+#### Workspace Configuration
+- `pyproject.toml` workspace members use glob patterns: `packages/sdk/*`, `packages/platform/*`
+- 9 source paths in ruff, mypy, pytest, and coverage configs
+- CI pipeline coverage flags updated for all sub-packages
+- `justfile` gains 7 new granular test recipes
+
+#### Legacy Cleanup
+- Migrated `ModelHealthRecord` FK from `RegisteredModel` to `MLModel`
+- Removed 6 legacy database tables
+- Split `models.py` (510 lines) into 7 domain files under `db/models/`
+- Split `settings.py` (510 lines) into 4 sub-modules under `settings/`
+
+#### Generic Entity CRUD API
+- New `entities/` module with `BaseService` pattern for datasets, models, ensembles, runs, features, lineage
+- Replaces legacy per-entity modules with a unified ML entity CRUD API
+
+#### Quality
+- 2738 tests across all packages, 100% coverage
+- mypy strict, ruff clean
+- Dashboard: 68 tests, TypeScript strict
+
 ## [0.6.0] — 2026-02-19
 
 ### Step 7 — Provider Hub Public Catalog

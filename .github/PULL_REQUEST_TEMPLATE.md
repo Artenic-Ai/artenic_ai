@@ -13,8 +13,13 @@ Brief description of the changes.
 
 ## Package(s) Affected
 
-- [ ] `sdk`
-- [ ] `platform`
+- [ ] `sdk/core`
+- [ ] `sdk/ensemble`
+- [ ] `sdk/training`
+- [ ] `sdk/client`
+- [ ] `platform/core`
+- [ ] `platform/providers`
+- [ ] `platform/training`
 - [ ] `cli`
 - [ ] `optimizer`
 - [ ] `dashboard`

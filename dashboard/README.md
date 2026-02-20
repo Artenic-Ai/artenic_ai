@@ -115,7 +115,7 @@ in `index.css` using Tailwind 4 `@theme` syntax:
 ## Testing
 
 - **Framework**: Vitest 4 + @testing-library/react 16 + jsdom
-- **Tests**: 51 across 6 test suites
+- **Tests**: 68 across 8 test suites
 - **Config**: `vitest.config.ts` with `define: { "import.meta.env.VITE_DEMO_MODE": JSON.stringify("true") }`
 - **CI**: runs `npm test` in the Dashboard job
 

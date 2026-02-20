@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "artenic-optimizer"
-version = "0.6.0"
+version = "0.7.0"
 description = "Artenic Training Optimizer — LTR-based instance selection for ML training jobs"
 readme = "../../README.md"
 license = "Apache-2.0"
