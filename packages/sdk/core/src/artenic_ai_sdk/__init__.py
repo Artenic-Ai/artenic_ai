@@ -131,7 +131,7 @@ try:
         Stacking,
         WeightedAverage,
     )
-except ImportError:
+except ImportError:  # pragma: no cover
     pass
 
 # Training (pip install artenic-ai-sdk[training])
@@ -143,13 +143,13 @@ try:
         TrainingContext,
         build_callbacks,
     )
-except ImportError:
+except ImportError:  # pragma: no cover
     pass
 
 # Client (pip install artenic-ai-sdk[client])
 try:
     from artenic_ai_sdk_client import PlatformClient
-except ImportError:
+except ImportError:  # pragma: no cover
     pass
 
 _CORE_ALL = [
