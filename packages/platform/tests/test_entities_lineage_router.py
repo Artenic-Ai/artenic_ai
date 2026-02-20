@@ -184,3 +184,24 @@ class TestRemoveLink:
             },
         )
         assert resp.status_code == 404
+
+
+# ======================================================================
+# Additional coverage tests
+# ======================================================================
+
+
+class TestGraphEdgeCases:
+    async def test_graph_diamond_visits_node_once(self, client: AsyncClient) -> None:
+        """BFS graph with diamond shape triggers revisit skip."""
+        # Diamond: A -> B -> D, A -> C -> D
+        for src, tgt in [("A", "B"), ("A", "C"), ("B", "D"), ("C", "D")]:
+            await client.post(
+                BASE,
+                json={"source_id": src, "target_id": tgt, "relation_type": "depends_on"},
+            )
+        resp = await client.get(f"{BASE}/A/graph")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert set(data["nodes"]) == {"A", "B", "C", "D"}
+        assert len(data["edges"]) == 4

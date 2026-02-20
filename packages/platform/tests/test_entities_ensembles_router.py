@@ -254,3 +254,48 @@ class TestModelManagement:
         await _create_ensemble(client, ens_id="ens_rmnf_v1")
         resp = await client.delete(f"{BASE}/ens_rmnf_v1/models/nonexistent")
         assert resp.status_code == 404
+
+
+# ======================================================================
+# Additional coverage tests
+# ======================================================================
+
+
+class TestEnsembleCoverageEdgeCases:
+    async def test_create_with_explicit_version(self, client: AsyncClient) -> None:
+        body: dict[str, Any] = {
+            "id": "ens_ev_v5",
+            "name": "expl-v",
+            "strategy_type": "voting",
+            "version": 5,
+        }
+        resp = await client.post(BASE, json=body)
+        assert resp.status_code == 201
+        assert resp.json()["version"] == 5
+
+    async def test_list_with_strategy_type_filter(self, client: AsyncClient) -> None:
+        await _create_ensemble(client, ens_id="ens_stf1_v1", strategy_type="voting")
+        await _create_ensemble(client, ens_id="ens_stf2_v1", name="e2", strategy_type="stacking")
+        resp = await client.get(BASE, params={"strategy_type": "stacking"})
+        assert resp.status_code == 200
+        assert len(resp.json()) == 1
+
+    async def test_update_metadata(self, client: AsyncClient) -> None:
+        await _create_ensemble(client, ens_id="ens_umd_v1")
+        resp = await client.patch(
+            f"{BASE}/ens_umd_v1",
+            json={"metadata": {"key": "value"}},
+        )
+        assert resp.status_code == 200
+        assert resp.json()["metadata"] == {"key": "value"}
+
+    async def test_add_model_nonexistent_ensemble(self, client: AsyncClient) -> None:
+        resp = await client.post(
+            f"{BASE}/nonexistent/models",
+            json={"model_id": "mdl_x_v1"},
+        )
+        assert resp.status_code == 404
+
+    async def test_list_models_nonexistent_ensemble(self, client: AsyncClient) -> None:
+        resp = await client.get(f"{BASE}/nonexistent/models")
+        assert resp.status_code == 404

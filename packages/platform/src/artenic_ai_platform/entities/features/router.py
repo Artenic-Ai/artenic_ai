@@ -84,9 +84,7 @@ async def get_feature(feature_id: str, svc: Svc) -> dict[str, Any]:
 
 
 @router.patch("/{feature_id}")
-async def update_feature(
-    feature_id: str, body: UpdateFeatureRequest, svc: Svc
-) -> dict[str, Any]:
+async def update_feature(feature_id: str, body: UpdateFeatureRequest, svc: Svc) -> dict[str, Any]:
     """Update feature metadata."""
     updates = {k: v for k, v in body.model_dump().items() if v is not None}
     if "metadata" in updates:

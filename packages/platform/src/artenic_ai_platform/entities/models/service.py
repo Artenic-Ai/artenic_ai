@@ -48,9 +48,7 @@ class ModelService(GenericEntityService[MLModel]):
     # Artifact management
     # ------------------------------------------------------------------
 
-    async def upload_artifact(
-        self, model_id: str, filename: str, data: bytes
-    ) -> MLModel:
+    async def upload_artifact(self, model_id: str, filename: str, data: bytes) -> MLModel:
         """Upload a model artifact (weights, checkpoint, etc.)."""
         record = await self.get_or_raise(model_id)
 
@@ -69,7 +67,9 @@ class ModelService(GenericEntityService[MLModel]):
         await self._session.refresh(record)
         logger.info(
             "Uploaded artifact %s for model %s (%d bytes)",
-            filename, model_id, len(data),
+            filename,
+            model_id,
+            len(data),
         )
         return record
 

@@ -40,22 +40,28 @@ def svc(session: AsyncSession) -> _DatasetSvc:
 
 class TestCreate:
     async def test_create_returns_record(self, svc: _DatasetSvc) -> None:
-        record = await svc.create("ds:test:v1", {
-            "name": "test",
-            "version": 1,
-            "format": "csv",
-        })
+        record = await svc.create(
+            "ds:test:v1",
+            {
+                "name": "test",
+                "version": 1,
+                "format": "csv",
+            },
+        )
         assert record.id == "ds:test:v1"
         assert record.name == "test"
         assert record.format == "csv"
 
     async def test_create_with_metadata(self, svc: _DatasetSvc) -> None:
-        record = await svc.create("ds:meta:v1", {
-            "name": "meta",
-            "version": 1,
-            "format": "json",
-            "metadata_": {"source": "api"},
-        })
+        record = await svc.create(
+            "ds:meta:v1",
+            {
+                "name": "meta",
+                "version": 1,
+                "format": "json",
+                "metadata_": {"source": "api"},
+            },
+        )
         assert record.metadata_ == {"source": "api"}
 
 

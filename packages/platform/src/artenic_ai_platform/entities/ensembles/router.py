@@ -125,9 +125,7 @@ async def delete_ensemble(ensemble_id: str, svc: Svc) -> None:
 
 
 @router.patch("/{ensemble_id}/stage")
-async def change_stage(
-    ensemble_id: str, body: ChangeStageRequest, svc: Svc
-) -> dict[str, Any]:
+async def change_stage(ensemble_id: str, body: ChangeStageRequest, svc: Svc) -> dict[str, Any]:
     """Transition ensemble stage (staging -> production -> retired)."""
     try:
         record = await svc.change_stage(ensemble_id, body.stage)
@@ -142,9 +140,7 @@ async def change_stage(
 
 
 @router.post("/{ensemble_id}/models", status_code=201)
-async def add_model(
-    ensemble_id: str, body: AddModelRequest, svc: Svc
-) -> dict[str, Any]:
+async def add_model(ensemble_id: str, body: AddModelRequest, svc: Svc) -> dict[str, Any]:
     """Add a model to an ensemble."""
     try:
         link = await svc.add_model(ensemble_id, body.model_id)

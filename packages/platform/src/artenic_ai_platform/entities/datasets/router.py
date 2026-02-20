@@ -140,9 +140,7 @@ async def get_dataset(dataset_id: str, svc: Svc) -> dict[str, Any]:
 
 
 @router.patch("/{dataset_id}")
-async def update_dataset(
-    dataset_id: str, body: UpdateDatasetRequest, svc: Svc
-) -> dict[str, Any]:
+async def update_dataset(dataset_id: str, body: UpdateDatasetRequest, svc: Svc) -> dict[str, Any]:
     """Update dataset metadata/description."""
     updates = {k: v for k, v in body.model_dump().items() if v is not None}
     if "metadata" in updates:
@@ -169,9 +167,7 @@ async def delete_dataset(dataset_id: str, svc: Svc) -> None:
 
 
 @router.patch("/{dataset_id}/status")
-async def change_status(
-    dataset_id: str, body: ChangeStatusRequest, svc: Svc
-) -> dict[str, Any]:
+async def change_status(dataset_id: str, body: ChangeStatusRequest, svc: Svc) -> dict[str, Any]:
     """Transition dataset status (created -> active -> archived)."""
     try:
         record = await svc.change_status(dataset_id, body.status)
@@ -186,9 +182,7 @@ async def change_status(
 
 
 @router.post("/{dataset_id}/versions", status_code=201)
-async def create_version(
-    dataset_id: str, body: CreateVersionRequest, svc: Svc
-) -> dict[str, Any]:
+async def create_version(dataset_id: str, body: CreateVersionRequest, svc: Svc) -> dict[str, Any]:
     """Create a new version of this dataset (new row, incremented version)."""
     try:
         source = await svc.get_or_raise(dataset_id)

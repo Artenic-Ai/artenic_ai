@@ -83,9 +83,7 @@ class DatasetService(GenericEntityService[MLDataset]):
     # Files
     # ------------------------------------------------------------------
 
-    async def upload_file(
-        self, dataset_id: str, filename: str, data: bytes
-    ) -> MLDatasetFile:
+    async def upload_file(self, dataset_id: str, filename: str, data: bytes) -> MLDatasetFile:
         """Upload a file to a dataset."""
         record = await self.get_or_raise(dataset_id)
         filename = _sanitize_filename(filename)
@@ -112,7 +110,10 @@ class DatasetService(GenericEntityService[MLDataset]):
         await self._session.refresh(file_record)
         logger.info(
             "Uploaded %s to dataset %s (%d bytes, mime=%s)",
-            filename, dataset_id, len(data), mime,
+            filename,
+            dataset_id,
+            len(data),
+            mime,
         )
         return file_record
 
@@ -283,4 +284,4 @@ class DatasetService(GenericEntityService[MLDataset]):
                 "truncated": len(lines) > limit,
             }
 
-        return {"columns": [], "rows": [], "total_rows": 0, "truncated": False}
+        return {"columns": [], "rows": [], "total_rows": 0, "truncated": False}  # pragma: no cover

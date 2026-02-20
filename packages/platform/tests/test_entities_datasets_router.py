@@ -454,3 +454,183 @@ class TestStorageOptions:
         assert isinstance(data, list)
         ids = [opt["id"] for opt in data]
         assert "filesystem" in ids
+
+
+# ======================================================================
+# Additional coverage tests
+# ======================================================================
+
+
+class TestDeleteDatasetWithFiles:
+    async def test_delete_cascade_files(self, client: AsyncClient) -> None:
+        """Delete a dataset that has uploaded files (covers storage delete loop)."""
+        await _create_dataset(client, ds_id="ds_delfiles_v1")
+        await client.post(
+            f"{BASE}/ds_delfiles_v1/files",
+            files={"file": ("a.csv", b"col\nval\n", "text/csv")},
+        )
+        resp = await client.delete(f"{BASE}/ds_delfiles_v1")
+        assert resp.status_code == 204
+
+
+class TestStatsEdgeCases:
+    async def test_stats_json_array(self, client: AsyncClient) -> None:
+        """Stats on a json-format dataset counts records from JSON array."""
+        await _create_dataset(client, ds_id="ds_stjs_v1", fmt="json")
+        await client.post(
+            f"{BASE}/ds_stjs_v1/files",
+            files={"file": ("d.json", b'[{"a":1},{"a":2},{"a":3}]', "application/json")},
+        )
+        resp = await client.get(f"{BASE}/ds_stjs_v1/stats")
+        assert resp.status_code == 200
+        assert resp.json()["num_records"] == 3
+
+    async def test_stats_jsonl(self, client: AsyncClient) -> None:
+        """Stats on a jsonl-format dataset counts JSONL lines."""
+        await _create_dataset(client, ds_id="ds_stjl_v1", fmt="jsonl")
+        await client.post(
+            f"{BASE}/ds_stjl_v1/files",
+            files={"file": ("d.jsonl", b'{"a":1}\n{"a":2}\n', "application/x-jsonlines")},
+        )
+        resp = await client.get(f"{BASE}/ds_stjl_v1/stats")
+        assert resp.status_code == 200
+        assert resp.json()["num_records"] == 2
+
+    async def test_stats_skip_large_file(
+        self, client: AsyncClient, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Stats skip files larger than the max stat file size."""
+        import artenic_ai_platform.entities.datasets.service as ds_svc
+
+        monkeypatch.setattr(ds_svc, "_MAX_STAT_FILE_BYTES", 1)
+        await _create_dataset(client, ds_id="ds_stbig_v1", fmt="csv")
+        await client.post(
+            f"{BASE}/ds_stbig_v1/files",
+            files={"file": ("b.csv", b"name\nalice\n", "text/csv")},
+        )
+        resp = await client.get(f"{BASE}/ds_stbig_v1/stats")
+        assert resp.status_code == 200
+        assert "num_records" not in resp.json()
+
+    async def test_stats_handles_corrupt_file(self, client: AsyncClient) -> None:
+        """Stats gracefully handle files that fail JSON parsing."""
+        await _create_dataset(client, ds_id="ds_stcorr_v1", fmt="json")
+        # Upload a .txt file (bypasses json counting in upload) with invalid JSON
+        await client.post(
+            f"{BASE}/ds_stcorr_v1/files",
+            files={"file": ("bad.txt", b"[invalid json", "text/plain")},
+        )
+        resp = await client.get(f"{BASE}/ds_stcorr_v1/stats")
+        assert resp.status_code == 200
+        assert "num_records" not in resp.json()
+
+    async def test_stats_empty_json_file(self, client: AsyncClient) -> None:
+        """Stats count 0 records for an empty JSON file."""
+        await _create_dataset(client, ds_id="ds_stempty_v1", fmt="json")
+        await client.post(
+            f"{BASE}/ds_stempty_v1/files",
+            files={"file": ("empty.txt", b"   ", "text/plain")},
+        )
+        resp = await client.get(f"{BASE}/ds_stempty_v1/stats")
+        assert resp.status_code == 200
+
+    async def test_stats_parquet_format(self, client: AsyncClient) -> None:
+        """Stats on parquet-format dataset returns None for record count."""
+        await _create_dataset(client, ds_id="ds_stpq_v1", fmt="parquet")
+        await client.post(
+            f"{BASE}/ds_stpq_v1/files",
+            files={"file": ("data.parquet", b"fake-parquet-data", "application/octet-stream")},
+        )
+        resp = await client.get(f"{BASE}/ds_stpq_v1/stats")
+        assert resp.status_code == 200
+        assert "num_records" not in resp.json()
+
+
+class TestPreviewEdgeCases:
+    async def test_preview_non_tabular_format(self, client: AsyncClient) -> None:
+        """Preview for non-tabular format returns empty result."""
+        await _create_dataset(client, ds_id="ds_prnt_v1", fmt="parquet")
+        resp = await client.get(f"{BASE}/ds_prnt_v1/preview")
+        assert resp.status_code == 200
+        assert resp.json()["rows"] == []
+
+    async def test_preview_no_files(self, client: AsyncClient) -> None:
+        """Preview for dataset with no uploaded files returns empty result."""
+        await _create_dataset(client, ds_id="ds_prnf_v1", fmt="csv")
+        resp = await client.get(f"{BASE}/ds_prnf_v1/preview")
+        assert resp.status_code == 200
+        assert resp.json()["rows"] == []
+
+    async def test_preview_large_file_skipped(
+        self, client: AsyncClient, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Preview skips files exceeding the size limit."""
+        import artenic_ai_platform.entities.datasets.service as ds_svc
+
+        monkeypatch.setattr(ds_svc, "_MAX_STAT_FILE_BYTES", 1)
+        await _create_dataset(client, ds_id="ds_prlg_v1", fmt="csv")
+        await client.post(
+            f"{BASE}/ds_prlg_v1/files",
+            files={"file": ("d.csv", b"name\nalice\n", "text/csv")},
+        )
+        resp = await client.get(f"{BASE}/ds_prlg_v1/preview")
+        assert resp.status_code == 200
+        assert resp.json()["rows"] == []
+
+    async def test_preview_csv_truncated(self, client: AsyncClient) -> None:
+        """Preview CSV with limit smaller than row count truncates."""
+        await _create_dataset(client, ds_id="ds_prtr_v1", fmt="csv")
+        await client.post(
+            f"{BASE}/ds_prtr_v1/files",
+            files={"file": ("d.csv", b"name,age\nalice,30\nbob,25\n", "text/csv")},
+        )
+        resp = await client.get(f"{BASE}/ds_prtr_v1/preview", params={"limit": 1})
+        assert resp.status_code == 200
+        data = resp.json()
+        assert len(data["rows"]) == 1
+        assert data["truncated"] is True
+
+    async def test_preview_json_array(self, client: AsyncClient) -> None:
+        """Preview for json-format dataset with JSON array."""
+        await _create_dataset(client, ds_id="ds_prja_v1", fmt="json")
+        await client.post(
+            f"{BASE}/ds_prja_v1/files",
+            files={
+                "file": (
+                    "d.json",
+                    b'[{"name":"alice","age":30},{"name":"bob","age":25}]',
+                    "application/json",
+                )
+            },
+        )
+        resp = await client.get(f"{BASE}/ds_prja_v1/preview")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["columns"] == ["name", "age"]
+        assert len(data["rows"]) == 2
+
+    async def test_preview_jsonl(self, client: AsyncClient) -> None:
+        """Preview for jsonl-format dataset with JSONL lines."""
+        await _create_dataset(client, ds_id="ds_prjl_v1", fmt="jsonl")
+        await client.post(
+            f"{BASE}/ds_prjl_v1/files",
+            files={"file": ("d.jsonl", b'{"name":"alice"}\n{"name":"bob"}\n', "text/plain")},
+        )
+        resp = await client.get(f"{BASE}/ds_prjl_v1/preview")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["columns"] == ["name"]
+        assert len(data["rows"]) == 2
+
+    async def test_preview_empty_json_array(self, client: AsyncClient) -> None:
+        """Preview for json-format dataset with empty JSON array."""
+        await _create_dataset(client, ds_id="ds_prje_v1", fmt="json")
+        await client.post(
+            f"{BASE}/ds_prje_v1/files",
+            files={"file": ("d.json", b"[]", "application/json")},
+        )
+        resp = await client.get(f"{BASE}/ds_prje_v1/preview")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["rows"] == []
+        assert data["total_rows"] == 0

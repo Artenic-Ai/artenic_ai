@@ -52,9 +52,7 @@ class EnsembleService(GenericEntityService[MLEnsemble]):
         """List all model IDs in an ensemble."""
         await self.get_or_raise(ensemble_id)
         result = await self._session.execute(
-            select(MLEnsembleModel.model_id).where(
-                MLEnsembleModel.ensemble_id == ensemble_id
-            )
+            select(MLEnsembleModel.model_id).where(MLEnsembleModel.ensemble_id == ensemble_id)
         )
         return list(result.scalars().all())
 

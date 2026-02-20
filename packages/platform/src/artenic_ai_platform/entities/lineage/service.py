@@ -21,9 +21,7 @@ class LineageService:
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
 
-    async def add_link(
-        self, source_id: str, target_id: str, relation_type: str
-    ) -> MLLineage:
+    async def add_link(self, source_id: str, target_id: str, relation_type: str) -> MLLineage:
         """Add a lineage link. Idempotent (unique constraint)."""
         link = MLLineage(
             source_id=source_id,
@@ -48,12 +46,8 @@ class LineageService:
         )
         links = list(result.scalars().all())
 
-        upstream = [
-            _link_to_dict(lk) for lk in links if lk.target_id == entity_id
-        ]
-        downstream = [
-            _link_to_dict(lk) for lk in links if lk.source_id == entity_id
-        ]
+        upstream = [_link_to_dict(lk) for lk in links if lk.target_id == entity_id]
+        downstream = [_link_to_dict(lk) for lk in links if lk.source_id == entity_id]
         return {
             "entity_id": entity_id,
             "upstream": upstream,
@@ -84,9 +78,7 @@ class LineageService:
                 edge = _link_to_dict(link)
                 if edge not in edges:
                     edges.append(edge)
-                neighbor = (
-                    link.target_id if link.source_id == current else link.source_id
-                )
+                neighbor = link.target_id if link.source_id == current else link.source_id
                 if neighbor not in visited:
                     queue.append(neighbor)
 
@@ -96,9 +88,7 @@ class LineageService:
             "edges": edges,
         }
 
-    async def remove_link(
-        self, source_id: str, target_id: str, relation_type: str
-    ) -> None:
+    async def remove_link(self, source_id: str, target_id: str, relation_type: str) -> None:
         """Remove a lineage link."""
         result = await self._session.execute(
             select(MLLineage).where(

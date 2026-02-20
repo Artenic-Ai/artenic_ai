@@ -102,9 +102,7 @@ async def get_model(model_id: str, svc: Svc) -> dict[str, Any]:
 
 
 @router.patch("/{model_id}")
-async def update_model(
-    model_id: str, body: UpdateModelRequest, svc: Svc
-) -> dict[str, Any]:
+async def update_model(model_id: str, body: UpdateModelRequest, svc: Svc) -> dict[str, Any]:
     """Update model metadata/metrics."""
     updates = {k: v for k, v in body.model_dump().items() if v is not None}
     if "metadata" in updates:
@@ -131,9 +129,7 @@ async def delete_model(model_id: str, svc: Svc) -> None:
 
 
 @router.patch("/{model_id}/stage")
-async def change_stage(
-    model_id: str, body: ChangeStageRequest, svc: Svc
-) -> dict[str, Any]:
+async def change_stage(model_id: str, body: ChangeStageRequest, svc: Svc) -> dict[str, Any]:
     """Transition model stage (draft -> staging -> production -> retired)."""
     try:
         record = await svc.change_stage(model_id, body.stage)
@@ -148,9 +144,7 @@ async def change_stage(
 
 
 @router.put("/{model_id}/artifact", status_code=200)
-async def upload_artifact(
-    model_id: str, file: UploadFile, svc: Svc
-) -> dict[str, Any]:
+async def upload_artifact(model_id: str, file: UploadFile, svc: Svc) -> dict[str, Any]:
     """Upload a model artifact."""
     data = await file.read()
     filename = file.filename or "model.bin"

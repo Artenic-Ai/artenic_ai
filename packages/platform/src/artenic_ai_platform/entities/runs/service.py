@@ -61,9 +61,7 @@ class RunService(GenericEntityService[MLRun]):
     # Input/Output management
     # ------------------------------------------------------------------
 
-    async def add_io(
-        self, run_id: str, entity_id: str, direction: str
-    ) -> MLRunIO:
+    async def add_io(self, run_id: str, entity_id: str, direction: str) -> MLRunIO:
         """Add an input or output entity reference to a run."""
         await self.get_or_raise(run_id)
         io_record = MLRunIO(run_id=run_id, entity_id=entity_id, direction=direction)
@@ -76,14 +74,10 @@ class RunService(GenericEntityService[MLRun]):
     async def list_io(self, run_id: str) -> list[MLRunIO]:
         """List all input/output references for a run."""
         await self.get_or_raise(run_id)
-        result = await self._session.execute(
-            select(MLRunIO).where(MLRunIO.run_id == run_id)
-        )
+        result = await self._session.execute(select(MLRunIO).where(MLRunIO.run_id == run_id))
         return list(result.scalars().all())
 
-    async def remove_io(
-        self, run_id: str, entity_id: str, direction: str
-    ) -> None:
+    async def remove_io(self, run_id: str, entity_id: str, direction: str) -> None:
         """Remove an input/output reference from a run."""
         result = await self._session.execute(
             select(MLRunIO).where(
@@ -109,13 +103,9 @@ class RunService(GenericEntityService[MLRun]):
         io_records = await self.list_io(run_id)
         return {
             **_run_to_dict(record),
-            "inputs": [
-                {"entity_id": io.entity_id}
-                for io in io_records if io.direction == "input"
-            ],
+            "inputs": [{"entity_id": io.entity_id} for io in io_records if io.direction == "input"],
             "outputs": [
-                {"entity_id": io.entity_id}
-                for io in io_records if io.direction == "output"
+                {"entity_id": io.entity_id} for io in io_records if io.direction == "output"
             ],
         }
 

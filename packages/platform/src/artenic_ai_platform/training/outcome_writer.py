@@ -95,9 +95,7 @@ class OutcomeWriter:
 
         # --- Update associated MLRun (if exists) -------------------------
         run_id = f"run:{job_id}"
-        run_result = await self._session.execute(
-            select(MLRun).where(MLRun.id == run_id)
-        )
+        run_result = await self._session.execute(select(MLRun).where(MLRun.id == run_id))
         ml_run = run_result.scalar_one_or_none()
         if ml_run is not None:
             ml_run.status = "completed" if outcome.success else "failed"

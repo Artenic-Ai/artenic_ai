@@ -94,9 +94,7 @@ async def delete_run(run_id: str, svc: Svc) -> None:
 
 
 @router.patch("/{run_id}/status")
-async def change_status(
-    run_id: str, body: UpdateRunStatusRequest, svc: Svc
-) -> dict[str, Any]:
+async def change_status(run_id: str, body: UpdateRunStatusRequest, svc: Svc) -> dict[str, Any]:
     """Update run status with optional metrics and duration."""
     try:
         record = await svc.change_status(

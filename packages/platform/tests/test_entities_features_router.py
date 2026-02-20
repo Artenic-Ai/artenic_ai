@@ -165,3 +165,21 @@ class TestDeleteFeature:
     async def test_delete_not_found(self, client: AsyncClient) -> None:
         resp = await client.delete(f"{BASE}/nonexistent")
         assert resp.status_code == 404
+
+
+# ======================================================================
+# Additional coverage tests
+# ======================================================================
+
+
+class TestFeatureCoverageEdgeCases:
+    async def test_create_with_explicit_version(self, client: AsyncClient) -> None:
+        body: dict[str, Any] = {
+            "id": "feat_ev_v5",
+            "name": "expl-v",
+            "metadata": {},
+            "version": 5,
+        }
+        resp = await client.post(BASE, json=body)
+        assert resp.status_code == 201
+        assert resp.json()["version"] == 5

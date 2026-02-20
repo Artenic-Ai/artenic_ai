@@ -292,3 +292,42 @@ class TestDownloadArtifact:
     async def test_download_nonexistent_model(self, client: AsyncClient) -> None:
         resp = await client.get(f"{BASE}/nonexistent/artifact")
         assert resp.status_code == 404
+
+
+# ======================================================================
+# Additional coverage tests
+# ======================================================================
+
+
+class TestModelCoverageEdgeCases:
+    async def test_create_with_explicit_version(self, client: AsyncClient) -> None:
+        body = _create_body(model_id="mdl_ev_v5")
+        body["version"] = 5
+        resp = await client.post(BASE, json=body)
+        assert resp.status_code == 201
+        assert resp.json()["version"] == 5
+
+    async def test_list_with_name_filter(self, client: AsyncClient) -> None:
+        await _create_model(client, model_id="mdl_nf1_v1", name="specific")
+        await _create_model(client, model_id="mdl_nf2_v1", name="other")
+        resp = await client.get(BASE, params={"name": "specific"})
+        assert resp.status_code == 200
+        assert len(resp.json()) == 1
+
+    async def test_update_metadata(self, client: AsyncClient) -> None:
+        await _create_model(client, model_id="mdl_umd_v1")
+        resp = await client.patch(
+            f"{BASE}/mdl_umd_v1",
+            json={"metadata": {"key": "value"}},
+        )
+        assert resp.status_code == 200
+        assert resp.json()["metadata"] == {"key": "value"}
+
+    async def test_delete_with_artifact(self, client: AsyncClient) -> None:
+        await _create_model(client, model_id="mdl_delart_v1")
+        await client.put(
+            f"{BASE}/mdl_delart_v1/artifact",
+            files={"file": ("model.pt", b"weights", "application/octet-stream")},
+        )
+        resp = await client.delete(f"{BASE}/mdl_delart_v1")
+        assert resp.status_code == 204

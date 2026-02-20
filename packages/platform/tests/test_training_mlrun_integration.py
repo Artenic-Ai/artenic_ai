@@ -71,9 +71,7 @@ class TestDispatchCreatesMLRun:
     async def test_dispatch_mlrun_has_config(
         self, session: AsyncSession, manager: TrainingManager
     ) -> None:
-        job_id = await manager.dispatch(
-            "svc", "model", "mock", config={"lr": 0.01}
-        )
+        job_id = await manager.dispatch("svc", "model", "mock", config={"lr": 0.01})
 
         run_id = f"run:{job_id}"
         result = await session.execute(select(MLRun).where(MLRun.id == run_id))
@@ -96,9 +94,7 @@ class TestOutcomeUpdatesMLRun:
         job_id = await manager.dispatch("svc", "model", "mock")
 
         # Simulate job completion
-        result = await session.execute(
-            select(TrainingJob).where(TrainingJob.id == job_id)
-        )
+        result = await session.execute(select(TrainingJob).where(TrainingJob.id == job_id))
         job = result.scalar_one()
         job.status = JobStatus.COMPLETED.value
         job.metrics = {"accuracy": 0.95}
@@ -123,9 +119,7 @@ class TestOutcomeUpdatesMLRun:
     ) -> None:
         job_id = await manager.dispatch("svc", "model", "mock")
 
-        result = await session.execute(
-            select(TrainingJob).where(TrainingJob.id == job_id)
-        )
+        result = await session.execute(select(TrainingJob).where(TrainingJob.id == job_id))
         job = result.scalar_one()
         job.status = JobStatus.FAILED.value
         await session.commit()
