@@ -17,6 +17,7 @@ from artenic_ai_platform.entities.datasets.storage import (
     OVHSwiftStorage,
     S3Storage,
 )
+from artenic_ai_platform.inference.model_loader import ModelLoader
 from artenic_ai_platform.settings import DatasetConfig, DatasetStorageConfig, PlatformSettings
 
 # ======================================================================
@@ -145,7 +146,9 @@ class TestLifespan:
             assert hasattr(app.state, "session_factory")
             assert hasattr(app.state, "secret_manager")
             assert hasattr(app.state, "get_db")
+            assert hasattr(app.state, "model_loader")
             assert isinstance(app.state.secret_manager, SecretManager)
+            assert isinstance(app.state.model_loader, ModelLoader)
 
     async def test_lifespan_registers_local_provider(self) -> None:
         from artenic_ai_platform.settings import LocalConfig

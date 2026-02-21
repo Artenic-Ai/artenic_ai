@@ -24,6 +24,7 @@ class TestPluginInfo:
         info = PluginInfo(name="p", group="g", module="m")
         assert info.enabled is True
         assert info.error is None
+        assert info.obj is None
 
     def test_disabled_with_error(self) -> None:
         info = PluginInfo(name="p", group="g", module="m", enabled=False, error="import fail")
@@ -138,6 +139,7 @@ class TestDiscoverPlugins:
         assert info.enabled is True
         assert info.error is None
         assert info.module == "my.module:Provider"
+        assert info.obj is object
 
     def test_failed_plugin_load(self) -> None:
         mock_ep = SimpleNamespace(
@@ -156,6 +158,7 @@ class TestDiscoverPlugins:
         info = registry.providers["broken"]
         assert info.enabled is False
         assert "no module" in info.error  # type: ignore[operator]
+        assert info.obj is None
 
     def test_mixed_success_and_failure(self) -> None:
         good_ep = SimpleNamespace(

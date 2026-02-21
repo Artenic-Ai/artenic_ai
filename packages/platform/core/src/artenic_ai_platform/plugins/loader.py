@@ -26,6 +26,7 @@ class PluginInfo:
     module: str
     enabled: bool = True
     error: str | None = None
+    obj: Any = None
 
 
 @dataclass
@@ -76,11 +77,12 @@ def discover_plugins() -> PluginRegistry:
 
         for ep in _get_entry_points(group):
             try:
-                ep.load()
+                loaded = ep.load()
                 info = PluginInfo(
                     name=ep.name,
                     group=group,
                     module=str(ep.value),
+                    obj=loaded,
                 )
                 target[ep.name] = info
                 logger.debug("Loaded plugin %s from %s", ep.name, group)

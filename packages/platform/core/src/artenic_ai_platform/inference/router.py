@@ -71,6 +71,7 @@ async def predict(
         health_monitor=getattr(request.app.state, "health_monitor", None),
         ab_test_manager=getattr(request.app.state, "ab_test_manager", None),
         event_bus=getattr(request.app.state, "event_bus", None),
+        model_loader=getattr(request.app.state, "model_loader", None),
     )
     return await svc.predict(service, body.data, model_id=body.model_id)
 
@@ -88,5 +89,6 @@ async def predict_batch(
         health_monitor=getattr(request.app.state, "health_monitor", None),
         ab_test_manager=getattr(request.app.state, "ab_test_manager", None),
         event_bus=getattr(request.app.state, "event_bus", None),
+        model_loader=getattr(request.app.state, "model_loader", None),
     )
     return await svc.predict_batch(service, body.batch, model_id=body.model_id)

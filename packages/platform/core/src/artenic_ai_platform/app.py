@@ -38,6 +38,7 @@ from artenic_ai_platform.events.event_bus import EventBus
 from artenic_ai_platform.events.ws import router as ws_router
 from artenic_ai_platform.health.monitor import HealthMonitor
 from artenic_ai_platform.health.router import router as health_router
+from artenic_ai_platform.inference.model_loader import ModelLoader
 from artenic_ai_platform.inference.router import router as inference_router
 from artenic_ai_platform.middleware.auth import AuthMiddleware
 from artenic_ai_platform.middleware.correlation import CorrelationIdMiddleware
@@ -48,6 +49,7 @@ from artenic_ai_platform.middleware.errors import (
 from artenic_ai_platform.middleware.logging import setup_logging
 from artenic_ai_platform.middleware.metrics import MetricsMiddleware
 from artenic_ai_platform.middleware.rate_limit import RateLimitMiddleware
+from artenic_ai_platform.plugins.loader import discover_plugins
 from artenic_ai_platform.routes.config import router as config_router
 from artenic_ai_platform.settings import PlatformSettings
 from artenic_ai_platform_providers.hub.router import router as providers_hub_router
@@ -105,6 +107,11 @@ async def _lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         drift_threshold=getattr(settings.health, "drift_threshold", 0.1),
     )
 
+    # Discover and load model plugins
+    plugin_registry = discover_plugins()
+    model_loader = ModelLoader()
+    await model_loader.load_from_registry(plugin_registry)
+
     app.state.engine = engine
     app.state.session_factory = session_factory
     app.state.secret_manager = secret_manager
@@ -112,6 +119,7 @@ async def _lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     app.state.training_providers = training_providers
     app.state.event_bus = event_bus
     app.state.health_monitor = health_monitor
+    app.state.model_loader = model_loader
 
     # Budget manager factory — creates a BudgetManager per-request
     def _budget_factory(session: object) -> BudgetManager:
@@ -141,6 +149,7 @@ async def _lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     yield
 
     # --- Shutdown -------------------------------------------------------
+    await model_loader.teardown_all()
     health_monitor.stop()
     await engine.dispose()
     logger.info("Platform shut down")

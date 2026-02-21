@@ -13,6 +13,7 @@ if TYPE_CHECKING:
     from artenic_ai_platform.ab_testing.service import ABTestManager
     from artenic_ai_platform.events.event_bus import EventBus
     from artenic_ai_platform.health.monitor import HealthMonitor
+    from artenic_ai_platform.inference.model_loader import ModelLoader
 
 logger = logging.getLogger(__name__)
 
@@ -31,11 +32,13 @@ class InferenceService:
         health_monitor: HealthMonitor | None = None,
         ab_test_manager: ABTestManager | None = None,
         event_bus: EventBus | None = None,
+        model_loader: ModelLoader | None = None,
     ) -> None:
         self._session = session
         self._health_monitor = health_monitor
         self._ab_test_manager = ab_test_manager
         self._event_bus = event_bus
+        self._model_loader = model_loader
 
     # ------------------------------------------------------------------
     # Single prediction
@@ -74,18 +77,30 @@ class InferenceService:
             if variant is not None:
                 active_model_id = variant["model_id"]
 
-        # --- Execute prediction (stub) --------------------------------
+        # --- Execute prediction ----------------------------------------
         t0 = time.monotonic()
         try:
-            result: dict[str, Any] = {
-                "prediction": data,
-                "model_id": active_model_id,
-                "service": service,
-                "timestamp": datetime.now(UTC).isoformat(),
-            }
+            if self._model_loader is not None:
+                model = self._model_loader.get_model(active_model_id)
+                prediction = await model.predict(data)
+                result: dict[str, Any] = {
+                    "prediction": prediction.model_dump(),
+                    "model_id": active_model_id,
+                    "service": service,
+                    "timestamp": datetime.now(UTC).isoformat(),
+                }
+                confidence = prediction.confidence
+            else:
+                result = {
+                    "prediction": data,
+                    "model_id": active_model_id,
+                    "service": service,
+                    "timestamp": datetime.now(UTC).isoformat(),
+                }
+                confidence = 1.0
+
             t1 = time.monotonic()
             latency_ms = (t1 - t0) * 1_000
-            confidence = 1.0  # stub confidence
 
             # --- Health tracking (sync method) ------------------------
             if self._health_monitor is not None:

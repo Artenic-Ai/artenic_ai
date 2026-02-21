@@ -118,16 +118,13 @@ class TestHealthEndpoints:
 class TestInferenceEndpoint:
     """Inference service smoke test."""
 
-    async def test_predict_endpoint_smoke(self, client: AsyncClient) -> None:
+    async def test_predict_endpoint_no_model_returns_404(self, client: AsyncClient) -> None:
+        """Without any loaded model plugin, predict returns 404."""
         resp = await client.post(
             "/api/v1/services/test/predict",
             json={"data": {"x": 1}},
         )
-        assert resp.status_code == 200
-        body = resp.json()
-        assert body["service"] == "test"
-        assert body["prediction"] == {"x": 1}
-        assert "model_id" in body
+        assert resp.status_code == 404
 
 
 class TestRegistryEndpoint:
